@@ -39,7 +39,7 @@ This platform allows a user to choose a planetary target, define an event at the
 
 Astronomical distances are often quoted in **light-years**, but that term is frequently misunderstood.
 
-A **light-year is a distance**, not a time unit. Once the propagation speed is fixed at `c`, that distance immediately implies a **light-travel time**.
+A **light-year is a distance**, not a time unit. Once the propagation speed is fixed at $c$, that distance immediately implies a **light-travel time**.
 
 This simulator was built to make that relationship computationally explicit, visually intuitive, and scientifically grounded.
 
@@ -49,18 +49,14 @@ This simulator was built to make that relationship computationally explicit, vis
 
 ### Quick Summary
 
-```
-t_travel = d / c
+$$t_{\text{travel}} = \frac{d}{c}$$
 
-t_arrival = t_event + t_travel
+$$t_{\text{arrival}} = t_{\text{event}} + t_{\text{travel}}$$
 
-age_apparent = age_at_event
-age_actual   = age_at_event + t_travel
-age_hidden   = t_travel
-```
+$$t_{\text{apparent}} = \text{age at event}, \qquad t_{\text{actual}} = \text{age at event} + t_{\text{travel}}, \qquad t_{\text{hidden}} = t_{\text{travel}}$$
 
-If distance is given in light-years and speed of light is 1 ly/yr,
-then t_travel (in years) equals d (in light-years) numerically.
+> When distance $d$ is expressed in light-years and $c = 1 \, \text{ly/yr}$,
+> the travel time in years equals the distance in light-years numerically.
 
 ---
 
@@ -68,76 +64,57 @@ then t_travel (in years) equals d (in light-years) numerically.
 
 #### Variables
 
-```
-d            = distance from source to Earth                    [light-years, ly]
-c            = speed of light = 1                              [ly / yr]  (natural units)
-t_event      = time at which the event occurs                  [years, yr]
-t_travel     = time for light to travel from source to Earth   [yr]
-t_arrival    = time at which the signal arrives at Earth       [yr]
-age_event    = age of the subject at the moment the event occurs        [yr]
-age_apparent = age Earth perceives the subject to be upon signal arrival
-age_actual   = true age of the subject at the moment Earth receives the signal
-age_hidden   = temporal gap concealed by light-travel delay
-```
+| Symbol | Description | Units |
+|---|---|---|
+| $d$ | Distance from source to Earth | light-years (ly) |
+| $c$ | Speed of light $= 1$ | ly / yr (natural units) |
+| $t_{\text{event}}$ | Time at which the event occurs at the source | years (yr) |
+| $t_{\text{travel}}$ | Light-travel time from source to Earth | yr |
+| $t_{\text{arrival}}$ | Time the signal arrives at Earth | yr |
+| $\text{age}_{\text{event}}$ | Age of subject when the event occurs | yr |
+| $\text{age}_{\text{apparent}}$ | Age Earth perceives the subject to be | yr |
+| $\text{age}_{\text{actual}}$ | True age of subject when signal arrives at Earth | yr |
+| $\text{age}_{\text{hidden}}$ | Temporal gap concealed by light-travel delay | yr |
 
 ---
 
 #### 1. Light-Travel Time
 
-The time it takes for a photon to travel from the source to Earth:
+The time for a photon to travel from the source to Earth:
 
-```
-t_travel = d / c
-```
+$$\boxed{t_{\text{travel}} = \frac{d}{c}}$$
 
-In natural units where c = 1 ly/yr:
+In natural units where $c = 1 \, \text{ly/yr}$:
 
-```
-t_travel [yr] = d [ly]
-```
+$$t_{\text{travel}} \, [\text{yr}] = d \, [\text{ly}]$$
 
-This means a source 4.223 light-years away produces a signal that takes
-exactly 4.223 years to reach Earth — no approximation needed.
+A source $4.223$ light-years away produces a signal that takes exactly $4.223$ years to reach Earth — no approximation needed.
 
 ---
 
 #### 2. Signal Arrival Time
 
-If the event occurs at time t_event (measured from some reference epoch):
+If the event occurs at time $t_{\text{event}}$ measured from some reference epoch:
 
-```
-t_arrival = t_event + t_travel
-          = t_event + d / c
-```
+$$\boxed{t_{\text{arrival}} = t_{\text{event}} + \frac{d}{c}}$$
 
-Earth cannot observe the event until t_arrival.
-Everything between t_event and t_arrival is invisible to Earth.
+Earth cannot observe the event until $t_{\text{arrival}}$. Everything in the interval $[t_{\text{event}},\ t_{\text{arrival}})$ is invisible to Earth.
 
 ---
 
 #### 3. Apparent Age vs. Actual Age
 
-When Earth receives the signal, the subject in the signal appears to be:
+When the signal arrives, Earth sees the subject frozen at the age they were when the event occurred:
 
-```
-age_apparent = age_event
-```
+$$\text{age}_{\text{apparent}} = \text{age}_{\text{event}}$$
 
-Earth sees the subject frozen at the age they were when the event occurred.
-But in reality, time has continued to pass at the source:
+But time has continued passing at the source. The subject's true age at the moment Earth receives the signal is:
 
-```
-age_actual = age_event + t_travel
-           = age_event + d / c
-```
+$$\boxed{\text{age}_{\text{actual}} = \text{age}_{\text{event}} + \frac{d}{c}}$$
 
-The gap between what Earth sees and what is actually true:
+The temporal gap hidden by propagation delay:
 
-```
-age_hidden = age_actual - age_apparent
-           = t_travel
-           = d / c
-```
+$$\boxed{\text{age}_{\text{hidden}} = \text{age}_{\text{actual}} - \text{age}_{\text{apparent}} = \frac{d}{c} = t_{\text{travel}}}$$
 
 The hidden age is exactly equal to the light-travel time.
 
@@ -145,67 +122,38 @@ The hidden age is exactly equal to the light-travel time.
 
 #### 4. Worked Example
 
-```
-Target distance      d          = 4.223 ly        (Proxima Centauri b, approx.)
-Speed of light       c          = 1 ly/yr
-Age at event         age_event  = 25 yr
-Event time           t_event    = 0 yr             (reference epoch)
+Let the target be **Proxima Centauri b** at $d = 4.223 \, \text{ly}$, with $c = 1 \, \text{ly/yr}$, and a subject aged $25$ years at the time of the event ($t_{\text{event}} = 0$):
 
-Light-travel time:
-  t_travel  = d / c  =  4.223 / 1  =  4.223 yr
+$$t_{\text{travel}} = \frac{4.223}{1} = 4.223 \, \text{yr}$$
 
-Signal arrival time:
-  t_arrival = t_event + t_travel  =  0 + 4.223  =  4.223 yr
+$$t_{\text{arrival}} = 0 + 4.223 = 4.223 \, \text{yr}$$
 
-Apparent age (what Earth sees):
-  age_apparent = 25 yr
+$$\text{age}_{\text{apparent}} = 25 \, \text{yr}$$
 
-Actual age at arrival:
-  age_actual = 25 + 4.223  =  29.223 yr
+$$\text{age}_{\text{actual}} = 25 + 4.223 = 29.223 \, \text{yr}$$
 
-Age hidden by delay:
-  age_hidden = 4.223 yr
-```
+$$\text{age}_{\text{hidden}} = 4.223 \, \text{yr}$$
 
 ---
 
 #### 5. Relativistic Notes and Model Limitations
 
-This simulator operates in the **non-relativistic limit**, which is valid when:
+This simulator operates in the **non-relativistic limit**, valid when:
 
-```
-v_source << c       (source velocity is negligible relative to c)
-```
+$$v_{\text{source}} \ll c$$
 
-In this regime:
-
-- No time dilation is applied (Lorentz factor gamma = 1)
-- No gravitational redshift is modeled
-- The source and Earth share a common reference frame
-- The speed of light is treated as exactly c in all directions
+In this regime: no time dilation ($\gamma = 1$), no gravitational redshift, and the source and Earth share a common inertial reference frame.
 
 **What this model does NOT account for:**
 
-```
-1. Special relativistic time dilation
-      t_proper = t_coordinate * sqrt(1 - v^2/c^2)
-      -- relevant only if the source is moving at a significant fraction of c
+| Effect | Formula | When it matters |
+|---|---|---|
+| Special relativistic time dilation | $t_{\text{proper}} = t_{\text{coord}} \cdot \sqrt{1 - v^2/c^2}$ | Source moving at significant fraction of $c$ |
+| Gravitational time dilation (GR) | $t_{\text{surface}} = t_{\infty} \cdot \sqrt{1 - \dfrac{2GM}{rc^2}}$ | Near neutron stars or black holes |
+| Cosmological redshift | $z = \dfrac{\lambda_{\text{obs}} - \lambda_{\text{emit}}}{\lambda_{\text{emit}}}$ | Extragalactic / cosmological distances |
+| Proper motion of source | $d = d(t)$, so $t_{\text{travel}} = \int \frac{dd}{c}$ | Fast-moving or nearby sources |
 
-2. Gravitational time dilation (General Relativity)
-      t_surface = t_infinity * sqrt(1 - 2GM / rc^2)
-      -- relevant near massive compact objects (neutron stars, black holes)
-
-3. Cosmological redshift
-      z = (lambda_observed - lambda_emitted) / lambda_emitted
-      -- relevant for extragalactic sources at cosmological distances
-
-4. Proper motion of the source
-      -- changes d over time, making t_travel a function of t_event
-```
-
-For targets at stellar distances (< ~100 ly) with low relative velocities,
-the non-relativistic model used here introduces negligible error
-and is appropriate for educational and visualization purposes.
+For stellar distances $d \lesssim 100 \, \text{ly}$ with low relative velocities, the non-relativistic model introduces negligible error and is fully appropriate for educational and visualization purposes.
 
 ---
 
