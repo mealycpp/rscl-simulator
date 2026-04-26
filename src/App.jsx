@@ -3,81 +3,95 @@ import { useState, useRef, useEffect, useCallback } from "react";
 const PC_TO_LY = 3.26156;
 const SPY = 365.25 * 86400;
 
+// ── LOCAL YEAR UTILITIES ───────────────────────────────────────────────────────
+function earthYearsToLocalYears(earthYears, orbitalPeriodDays) {
+  if (!orbitalPeriodDays || orbitalPeriodDays <= 0) return null;
+  return (earthYears * 365.25) / orbitalPeriodDays;
+}
+function fmtLocalYears(localYears, orbitalPeriodDays) {
+  if (localYears === null || isNaN(localYears)) return "Unknown";
+  if (localYears < 0.01) return ((localYears * orbitalPeriodDays * 24)).toFixed(1) + " local hrs";
+  if (localYears < 1)    return (localYears * orbitalPeriodDays).toFixed(1) + " local days";
+  if (localYears < 1000) return localYears.toFixed(1) + " local yrs";
+  return Math.round(localYears).toLocaleString() + " local yrs";
+}
+
+
 // 50+ real confirmed exoplanets — all within the Milky Way
 // distance_pc = parallax distance in parsecs
 // type: Rocky | Super-Earth | Water World | Sub-Neptune | Neptune-like | Gas Giant | Hot Jupiter | Ultra-hot Jupiter
 const TARGETS = [
   // ── NEAREST ──────────────────────────────────────────────────────────────
-  { system:"Proxima Centauri", planet:"Proxima Cen b",  distance_pc:1.2948,  color:"#fff176", type:"Rocky",        hz:true,  disc_year:2016, notes:"Nearest known exoplanet. Rocky world in the habitable zone of a red dwarf — 4.2 ly away." },
-  { system:"Proxima Centauri", planet:"Proxima Cen d",  distance_pc:1.2948,  color:"#ffe082", type:"Rocky",        hz:false, disc_year:2022, notes:"Sub-Earth mass planet orbiting very close to Proxima Centauri. Too hot for liquid water." },
-  { system:"Barnard's Star",   planet:"Barnard b",      distance_pc:1.8282,  color:"#ef9a9a", type:"Super-Earth",  hz:false, disc_year:2024, notes:"Candidate super-Earth around the second-nearest star system to the Sun." },
-  { system:"Wolf 359",         planet:"Wolf 359 b",     distance_pc:2.3900,  color:"#f48fb1", type:"Gas Giant",    hz:false, disc_year:2019, notes:"Gas giant orbiting one of the nearest stars — famous from Star Trek." },
-  { system:"Lalande 21185",    planet:"Lalande 21185 b",distance_pc:2.5457,  color:"#ce93d8", type:"Super-Earth",  hz:true,  disc_year:2017, notes:"Super-Earth candidate in the habitable zone of a nearby M-dwarf." },
+  { system:"Proxima Centauri", planet:"Proxima Cen b",  distance_pc:1.2948,  color:"#fff176", type:"Rocky",        hz:true,  disc_year:2016, notes:"Nearest known exoplanet. Rocky world in the habitable zone of a red dwarf — 4.2 ly away." , orbital_period_days:11.19, tidally_locked:true },
+  { system:"Proxima Centauri", planet:"Proxima Cen d",  distance_pc:1.2948,  color:"#ffe082", type:"Rocky",        hz:false, disc_year:2022, notes:"Sub-Earth mass planet orbiting very close to Proxima Centauri. Too hot for liquid water." , orbital_period_days:5.12, tidally_locked:true },
+  { system:"Barnard's Star",   planet:"Barnard b",      distance_pc:1.8282,  color:"#ef9a9a", type:"Super-Earth",  hz:false, disc_year:2024, notes:"Candidate super-Earth around the second-nearest star system to the Sun." , orbital_period_days:3.15, tidally_locked:true },
+  { system:"Wolf 359",         planet:"Wolf 359 b",     distance_pc:2.3900,  color:"#f48fb1", type:"Gas Giant",    hz:false, disc_year:2019, notes:"Gas giant orbiting one of the nearest stars — famous from Star Trek." , orbital_period_days:2617.0, tidally_locked:false },
+  { system:"Lalande 21185",    planet:"Lalande 21185 b",distance_pc:2.5457,  color:"#ce93d8", type:"Super-Earth",  hz:true,  disc_year:2017, notes:"Super-Earth candidate in the habitable zone of a nearby M-dwarf." , orbital_period_days:12.94, tidally_locked:true },
   // ── NEARBY SYSTEMS ───────────────────────────────────────────────────────
-  { system:"GJ 667C",          planet:"GJ 667C c",      distance_pc:6.8432,  color:"#80cbc4", type:"Super-Earth",  hz:true,  disc_year:2011, notes:"Super-Earth firmly in the habitable zone. One of the best nearby HZ candidates." },
-  { system:"GJ 667C",          planet:"GJ 667C e",      distance_pc:6.8432,  color:"#4db6ac", type:"Super-Earth",  hz:true,  disc_year:2013, notes:"Second habitable zone planet in the GJ 667C system." },
-  { system:"GJ 581",           planet:"GJ 581 c",       distance_pc:6.2981,  color:"#f06292", type:"Super-Earth",  hz:false, disc_year:2007, notes:"Super-Earth near the inner edge of the habitable zone. Dense and likely rocky." },
-  { system:"GJ 581",           planet:"GJ 581 d",       distance_pc:6.2981,  color:"#e91e8c", type:"Super-Earth",  hz:true,  disc_year:2007, notes:"Outer super-Earth — possibly habitable with a thick CO₂ atmosphere." },
-  { system:"Epsilon Eridani",  planet:"Epsilon Eri b",  distance_pc:3.2127,  color:"#ffab91", type:"Gas Giant",    hz:false, disc_year:2000, notes:"Jupiter-like planet around one of the Sun's nearest stellar neighbors." },
-  { system:"Tau Ceti",         planet:"Tau Ceti e",     distance_pc:3.6481,  color:"#ffe0b2", type:"Super-Earth",  hz:true,  disc_year:2012, notes:"Super-Earth in the habitable zone of a Sun-like star — 12 ly away." },
-  { system:"Tau Ceti",         planet:"Tau Ceti f",     distance_pc:3.6481,  color:"#ffcc80", type:"Super-Earth",  hz:true,  disc_year:2012, notes:"Outer habitable zone candidate around Tau Ceti." },
+  { system:"GJ 667C",          planet:"GJ 667C c",      distance_pc:6.8432,  color:"#80cbc4", type:"Super-Earth",  hz:true,  disc_year:2011, notes:"Super-Earth firmly in the habitable zone. One of the best nearby HZ candidates." , orbital_period_days:28.14, tidally_locked:true },
+  { system:"GJ 667C",          planet:"GJ 667C e",      distance_pc:6.8432,  color:"#4db6ac", type:"Super-Earth",  hz:true,  disc_year:2013, notes:"Second habitable zone planet in the GJ 667C system." , orbital_period_days:62.24, tidally_locked:true },
+  { system:"GJ 581",           planet:"GJ 581 c",       distance_pc:6.2981,  color:"#f06292", type:"Super-Earth",  hz:false, disc_year:2007, notes:"Super-Earth near the inner edge of the habitable zone. Dense and likely rocky." , orbital_period_days:12.92, tidally_locked:true },
+  { system:"GJ 581",           planet:"GJ 581 d",       distance_pc:6.2981,  color:"#e91e8c", type:"Super-Earth",  hz:true,  disc_year:2007, notes:"Outer super-Earth — possibly habitable with a thick CO₂ atmosphere." , orbital_period_days:66.87, tidally_locked:true },
+  { system:"Epsilon Eridani",  planet:"Epsilon Eri b",  distance_pc:3.2127,  color:"#ffab91", type:"Gas Giant",    hz:false, disc_year:2000, notes:"Jupiter-like planet around one of the Sun's nearest stellar neighbors." , orbital_period_days:2502.0, tidally_locked:false },
+  { system:"Tau Ceti",         planet:"Tau Ceti e",     distance_pc:3.6481,  color:"#ffe0b2", type:"Super-Earth",  hz:true,  disc_year:2012, notes:"Super-Earth in the habitable zone of a Sun-like star — 12 ly away." , orbital_period_days:168.12, tidally_locked:false },
+  { system:"Tau Ceti",         planet:"Tau Ceti f",     distance_pc:3.6481,  color:"#ffcc80", type:"Super-Earth",  hz:true,  disc_year:2012, notes:"Outer habitable zone candidate around Tau Ceti." , orbital_period_days:642.0, tidally_locked:false },
   // ── TRAPPIST SYSTEM ──────────────────────────────────────────────────────
-  { system:"TRAPPIST-1",       planet:"TRAPPIST-1 b",   distance_pc:12.4299, color:"#b3e5fc", type:"Rocky",        hz:false, disc_year:2017, notes:"Innermost TRAPPIST-1 planet. Too hot — likely a Venus analog." },
-  { system:"TRAPPIST-1",       planet:"TRAPPIST-1 c",   distance_pc:12.4299, color:"#81d4fa", type:"Rocky",        hz:false, disc_year:2017, notes:"Rocky world — recent JWST data suggests little to no atmosphere." },
-  { system:"TRAPPIST-1",       planet:"TRAPPIST-1 d",   distance_pc:12.4299, color:"#4fc3f7", type:"Rocky",        hz:true,  disc_year:2017, notes:"Inner habitable zone. Receives similar energy to Earth from the Sun." },
-  { system:"TRAPPIST-1",       planet:"TRAPPIST-1 e",   distance_pc:12.4299, color:"#29b6f6", type:"Rocky",        hz:true,  disc_year:2017, notes:"Best habitable zone rocky planet known. Earth-sized, top priority for biosignature searches." },
-  { system:"TRAPPIST-1",       planet:"TRAPPIST-1 f",   distance_pc:12.4299, color:"#039be5", type:"Rocky",        hz:true,  disc_year:2017, notes:"Outer habitable zone. Possibly a water-rich world or ice-covered surface." },
-  { system:"TRAPPIST-1",       planet:"TRAPPIST-1 g",   distance_pc:12.4299, color:"#0288d1", type:"Rocky",        hz:true,  disc_year:2017, notes:"Outer habitable zone. Larger than Earth — may have a thick H₂O envelope." },
-  { system:"TRAPPIST-1",       planet:"TRAPPIST-1 h",   distance_pc:12.4299, color:"#0277bd", type:"Rocky",        hz:false, disc_year:2017, notes:"Outermost TRAPPIST-1 planet. Likely frozen — too cold for liquid water." },
+  { system:"TRAPPIST-1",       planet:"TRAPPIST-1 b",   distance_pc:12.4299, color:"#b3e5fc", type:"Rocky",        hz:false, disc_year:2017, notes:"Innermost TRAPPIST-1 planet. Too hot — likely a Venus analog." , orbital_period_days:1.511, tidally_locked:true },
+  { system:"TRAPPIST-1",       planet:"TRAPPIST-1 c",   distance_pc:12.4299, color:"#81d4fa", type:"Rocky",        hz:false, disc_year:2017, notes:"Rocky world — recent JWST data suggests little to no atmosphere." , orbital_period_days:2.422, tidally_locked:true },
+  { system:"TRAPPIST-1",       planet:"TRAPPIST-1 d",   distance_pc:12.4299, color:"#4fc3f7", type:"Rocky",        hz:true,  disc_year:2017, notes:"Inner habitable zone. Receives similar energy to Earth from the Sun." , orbital_period_days:4.05, tidally_locked:true },
+  { system:"TRAPPIST-1",       planet:"TRAPPIST-1 e",   distance_pc:12.4299, color:"#29b6f6", type:"Rocky",        hz:true,  disc_year:2017, notes:"Best habitable zone rocky planet known. Earth-sized, top priority for biosignature searches." , orbital_period_days:6.101, tidally_locked:true },
+  { system:"TRAPPIST-1",       planet:"TRAPPIST-1 f",   distance_pc:12.4299, color:"#039be5", type:"Rocky",        hz:true,  disc_year:2017, notes:"Outer habitable zone. Possibly a water-rich world or ice-covered surface." , orbital_period_days:9.207, tidally_locked:true },
+  { system:"TRAPPIST-1",       planet:"TRAPPIST-1 g",   distance_pc:12.4299, color:"#0288d1", type:"Rocky",        hz:true,  disc_year:2017, notes:"Outer habitable zone. Larger than Earth — may have a thick H₂O envelope." , orbital_period_days:12.353, tidally_locked:true },
+  { system:"TRAPPIST-1",       planet:"TRAPPIST-1 h",   distance_pc:12.4299, color:"#0277bd", type:"Rocky",        hz:false, disc_year:2017, notes:"Outermost TRAPPIST-1 planet. Likely frozen — too cold for liquid water." , orbital_period_days:18.767, tidally_locked:true },
   // ── WATER WORLDS & SUB-NEPTUNES ──────────────────────────────────────────
-  { system:"GJ 1214",          planet:"GJ 1214 b",      distance_pc:14.6427, color:"#80deea", type:"Water World",  hz:false, disc_year:2009, notes:"The archetypal water world. Flat transmission spectrum suggests thick steam or water atmosphere." },
-  { system:"GJ 3470",          planet:"GJ 3470 b",      distance_pc:29.3500, color:"#4dd0e1", type:"Sub-Neptune",  hz:false, disc_year:2012, notes:"Warm Neptune-like world with a large extended atmosphere being actively evaporated." },
-  { system:"GJ 436",           planet:"GJ 436 b",       distance_pc:9.7556,  color:"#26c6da", type:"Neptune-like", hz:false, disc_year:2004, notes:"Hot Neptune orbiting very close. Has a giant comet-like tail of escaping hydrogen." },
-  { system:"55 Cancri",        planet:"55 Cnc e",       distance_pc:12.590,  color:"#ffab91", type:"Super-Earth",  hz:false, disc_year:2004, notes:"Ultra-hot super-Earth — surface possibly covered in molten lava. Year = 18 hours." },
-  { system:"55 Cancri",        planet:"55 Cnc f",       distance_pc:12.590,  color:"#ff8a65", type:"Gas Giant",    hz:true,  disc_year:2005, notes:"Gas giant in the outer habitable zone of 55 Cancri — any moons could be habitable." },
-  { system:"LHS 1140",         planet:"LHS 1140 b",     distance_pc:14.9861, color:"#ef9a9a", type:"Super-Earth",  hz:true,  disc_year:2017, notes:"Rocky super-Earth in the habitable zone — one of the best targets for atmospheric study." },
-  { system:"LHS 1140",         planet:"LHS 1140 c",     distance_pc:14.9861, color:"#e57373", type:"Rocky",        hz:false, disc_year:2020, notes:"Inner rocky planet in the LHS 1140 system — too hot for liquid water." },
+  { system:"GJ 1214",          planet:"GJ 1214 b",      distance_pc:14.6427, color:"#80deea", type:"Water World",  hz:false, disc_year:2009, notes:"The archetypal water world. Flat transmission spectrum suggests thick steam or water atmosphere." , orbital_period_days:1.58, tidally_locked:true },
+  { system:"GJ 3470",          planet:"GJ 3470 b",      distance_pc:29.3500, color:"#4dd0e1", type:"Sub-Neptune",  hz:false, disc_year:2012, notes:"Warm Neptune-like world with a large extended atmosphere being actively evaporated." , orbital_period_days:3.337, tidally_locked:true },
+  { system:"GJ 436",           planet:"GJ 436 b",       distance_pc:9.7556,  color:"#26c6da", type:"Neptune-like", hz:false, disc_year:2004, notes:"Hot Neptune orbiting very close. Has a giant comet-like tail of escaping hydrogen." , orbital_period_days:2.644, tidally_locked:true },
+  { system:"55 Cancri",        planet:"55 Cnc e",       distance_pc:12.590,  color:"#ffab91", type:"Super-Earth",  hz:false, disc_year:2004, notes:"Ultra-hot super-Earth — surface possibly covered in molten lava. Year = 18 hours." , orbital_period_days:0.737, tidally_locked:true },
+  { system:"55 Cancri",        planet:"55 Cnc f",       distance_pc:12.590,  color:"#ff8a65", type:"Gas Giant",    hz:true,  disc_year:2005, notes:"Gas giant in the outer habitable zone of 55 Cancri — any moons could be habitable." , orbital_period_days:259.0, tidally_locked:false },
+  { system:"LHS 1140",         planet:"LHS 1140 b",     distance_pc:14.9861, color:"#ef9a9a", type:"Super-Earth",  hz:true,  disc_year:2017, notes:"Rocky super-Earth in the habitable zone — one of the best targets for atmospheric study." , orbital_period_days:24.737, tidally_locked:true },
+  { system:"LHS 1140",         planet:"LHS 1140 c",     distance_pc:14.9861, color:"#e57373", type:"Rocky",        hz:false, disc_year:2020, notes:"Inner rocky planet in the LHS 1140 system — too hot for liquid water." , orbital_period_days:3.778, tidally_locked:true },
   // ── TOI SYSTEMS ──────────────────────────────────────────────────────────
-  { system:"TOI-1231",         planet:"TOI-1231 b",     distance_pc:27.6227, color:"#ce93d8", type:"Sub-Neptune",  hz:false, disc_year:2021, notes:"Warm sub-Neptune with a cool enough temperature to possibly retain a thick atmosphere." },
-  { system:"TOI-700",          planet:"TOI-700 d",      distance_pc:31.1400, color:"#a5d6a7", type:"Rocky",        hz:true,  disc_year:2020, notes:"Earth-sized planet in the habitable zone — one of the first confirmed HZ rocky planets from TESS." },
-  { system:"TOI-700",          planet:"TOI-700 e",      distance_pc:31.1400, color:"#81c784", type:"Rocky",        hz:true,  disc_year:2023, notes:"Second habitable zone planet in the TOI-700 system — slightly smaller than Earth." },
-  { system:"TOI-1452",         planet:"TOI-1452 b",     distance_pc:99.3000, color:"#80deea", type:"Water World",  hz:true,  disc_year:2022, notes:"Water world candidate — density suggests up to 30% water by mass. In the habitable zone." },
-  { system:"TOI-2285",         planet:"TOI-2285 b",     distance_pc:52.0000, color:"#4fc3f7", type:"Sub-Neptune",  hz:true,  disc_year:2022, notes:"Sub-Neptune near the habitable zone of a nearby M-dwarf star." },
-  { system:"TOI-4633",         planet:"TOI-4633 c",     distance_pc:110.000, color:"#fff59d", type:"Rocky",        hz:true,  disc_year:2023, notes:"Rocky planet in the habitable zone of a Sun-like star in a binary system." },
+  { system:"TOI-1231",         planet:"TOI-1231 b",     distance_pc:27.6227, color:"#ce93d8", type:"Sub-Neptune",  hz:false, disc_year:2021, notes:"Warm sub-Neptune with a cool enough temperature to possibly retain a thick atmosphere." , orbital_period_days:24.246, tidally_locked:true },
+  { system:"TOI-700",          planet:"TOI-700 d",      distance_pc:31.1400, color:"#a5d6a7", type:"Rocky",        hz:true,  disc_year:2020, notes:"Earth-sized planet in the habitable zone — one of the first confirmed HZ rocky planets from TESS." , orbital_period_days:37.422, tidally_locked:true },
+  { system:"TOI-700",          planet:"TOI-700 e",      distance_pc:31.1400, color:"#81c784", type:"Rocky",        hz:true,  disc_year:2023, notes:"Second habitable zone planet in the TOI-700 system — slightly smaller than Earth." , orbital_period_days:27.81, tidally_locked:true },
+  { system:"TOI-1452",         planet:"TOI-1452 b",     distance_pc:99.3000, color:"#80deea", type:"Water World",  hz:true,  disc_year:2022, notes:"Water world candidate — density suggests up to 30% water by mass. In the habitable zone." , orbital_period_days:11.063, tidally_locked:true },
+  { system:"TOI-2285",         planet:"TOI-2285 b",     distance_pc:52.0000, color:"#4fc3f7", type:"Sub-Neptune",  hz:true,  disc_year:2022, notes:"Sub-Neptune near the habitable zone of a nearby M-dwarf star." , orbital_period_days:27.268, tidally_locked:true },
+  { system:"TOI-4633",         planet:"TOI-4633 c",     distance_pc:110.000, color:"#fff59d", type:"Rocky",        hz:true,  disc_year:2023, notes:"Rocky planet in the habitable zone of a Sun-like star in a binary system." , orbital_period_days:272.0, tidally_locked:false },
   // ── KEPLER SYSTEMS ───────────────────────────────────────────────────────
-  { system:"Kepler-22",        planet:"Kepler-22 b",    distance_pc:194.642, color:"#c5e1a5", type:"Sub-Neptune",  hz:true,  disc_year:2011, notes:"First confirmed planet in the habitable zone of a Sun-like star. 2.4× Earth radius." },
-  { system:"Kepler-62",        planet:"Kepler-62 e",    distance_pc:368.000, color:"#a5d6a7", type:"Super-Earth",  hz:true,  disc_year:2013, notes:"Super-Earth in the habitable zone — possibly a water world with a global ocean." },
-  { system:"Kepler-62",        planet:"Kepler-62 f",    distance_pc:368.000, color:"#66bb6a", type:"Super-Earth",  hz:true,  disc_year:2013, notes:"Outer habitable zone super-Earth. One of the earliest compelling HZ candidates." },
-  { system:"Kepler-186",       planet:"Kepler-186 f",   distance_pc:178.500, color:"#aed581", type:"Rocky",        hz:true,  disc_year:2014, notes:"First Earth-sized planet confirmed in the habitable zone of another star." },
-  { system:"Kepler-296",       planet:"Kepler-296 e",   distance_pc:740.000, color:"#dce775", type:"Super-Earth",  hz:true,  disc_year:2014, notes:"Habitable zone super-Earth around an M-dwarf binary system." },
-  { system:"Kepler-438",       planet:"Kepler-438 b",   distance_pc:472.900, color:"#fff176", type:"Rocky",        hz:true,  disc_year:2015, notes:"One of the most Earth-like planets known by ESI score — but bombarded by stellar flares." },
-  { system:"Kepler-442",       planet:"Kepler-442 b",   distance_pc:342.000, color:"#ffee58", type:"Super-Earth",  hz:true,  disc_year:2015, notes:"One of the best HZ candidates — receives ~70% of Earth's solar flux from a cooler star." },
-  { system:"Kepler-452",       planet:"Kepler-452 b",   distance_pc:551.727, color:"#ffcc80", type:"Super-Earth",  hz:true,  disc_year:2015, notes:"⚠ Controversial — possibly Earth's older cousin at 1.5× radius, or a false positive." },
-  { system:"Kepler-1649",      planet:"Kepler-1649 c",  distance_pc:290.900, color:"#ff8a65", type:"Rocky",        hz:true,  disc_year:2020, notes:"Earth-sized HZ planet around an M-dwarf — among the most Earth-like found by Kepler." },
-  { system:"Kepler-69",        planet:"Kepler-69 c",    distance_pc:730.000, color:"#bcaaa4", type:"Super-Earth",  hz:false, disc_year:2013, notes:"Super-Earth near the inner edge of the HZ — possibly a super-Venus." },
+  { system:"Kepler-22",        planet:"Kepler-22 b",    distance_pc:194.642, color:"#c5e1a5", type:"Sub-Neptune",  hz:true,  disc_year:2011, notes:"First confirmed planet in the habitable zone of a Sun-like star. 2.4× Earth radius." , orbital_period_days:289.862, tidally_locked:false },
+  { system:"Kepler-62",        planet:"Kepler-62 e",    distance_pc:368.000, color:"#a5d6a7", type:"Super-Earth",  hz:true,  disc_year:2013, notes:"Super-Earth in the habitable zone — possibly a water world with a global ocean." , orbital_period_days:122.387, tidally_locked:false },
+  { system:"Kepler-62",        planet:"Kepler-62 f",    distance_pc:368.000, color:"#66bb6a", type:"Super-Earth",  hz:true,  disc_year:2013, notes:"Outer habitable zone super-Earth. One of the earliest compelling HZ candidates." , orbital_period_days:267.291, tidally_locked:false },
+  { system:"Kepler-186",       planet:"Kepler-186 f",   distance_pc:178.500, color:"#aed581", type:"Rocky",        hz:true,  disc_year:2014, notes:"First Earth-sized planet confirmed in the habitable zone of another star." , orbital_period_days:129.944, tidally_locked:false },
+  { system:"Kepler-296",       planet:"Kepler-296 e",   distance_pc:740.000, color:"#dce775", type:"Super-Earth",  hz:true,  disc_year:2014, notes:"Habitable zone super-Earth around an M-dwarf binary system." , orbital_period_days:34.141, tidally_locked:true },
+  { system:"Kepler-438",       planet:"Kepler-438 b",   distance_pc:472.900, color:"#fff176", type:"Rocky",        hz:true,  disc_year:2015, notes:"One of the most Earth-like planets known by ESI score — but bombarded by stellar flares." , orbital_period_days:35.233, tidally_locked:true },
+  { system:"Kepler-442",       planet:"Kepler-442 b",   distance_pc:342.000, color:"#ffee58", type:"Super-Earth",  hz:true,  disc_year:2015, notes:"One of the best HZ candidates — receives ~70% of Earth's solar flux from a cooler star." , orbital_period_days:112.305, tidally_locked:false },
+  { system:"Kepler-452",       planet:"Kepler-452 b",   distance_pc:551.727, color:"#ffcc80", type:"Super-Earth",  hz:true,  disc_year:2015, notes:"⚠ Controversial — possibly Earth's older cousin at 1.5× radius, or a false positive." , orbital_period_days:384.843, tidally_locked:false },
+  { system:"Kepler-1649",      planet:"Kepler-1649 c",  distance_pc:290.900, color:"#ff8a65", type:"Rocky",        hz:true,  disc_year:2020, notes:"Earth-sized HZ planet around an M-dwarf — among the most Earth-like found by Kepler." , orbital_period_days:19.535, tidally_locked:true },
+  { system:"Kepler-69",        planet:"Kepler-69 c",    distance_pc:730.000, color:"#bcaaa4", type:"Super-Earth",  hz:false, disc_year:2013, notes:"Super-Earth near the inner edge of the HZ — possibly a super-Venus." , orbital_period_days:242.461, tidally_locked:false },
   // ── HOT JUPITERS ─────────────────────────────────────────────────────────
-  { system:"51 Pegasi",        planet:"51 Peg b",       distance_pc:15.3600, color:"#ffb74d", type:"Hot Jupiter",  hz:false, disc_year:1995, notes:"The first exoplanet found around a Sun-like star. Nobel Prize 2019. Year = 4.2 days." },
-  { system:"HD 209458",        planet:"HD 209458 b",    distance_pc:47.0000, color:"#ffa726", type:"Hot Jupiter",  hz:false, disc_year:1999, notes:"'Osiris' — first exoplanet observed transiting its star. Has an evaporating atmosphere." },
-  { system:"HD 189733",        planet:"HD 189733 b",    distance_pc:19.7600, color:"#4fc3f7", type:"Hot Jupiter",  hz:false, disc_year:2005, notes:"Deep-blue hot Jupiter where it rains molten glass sideways at 9,000 km/h winds." },
-  { system:"WASP-17",          planet:"WASP-17 b",      distance_pc:390.000, color:"#b0bec5", type:"Hot Jupiter",  hz:false, disc_year:2009, notes:"One of the largest exoplanets known — puffed up, retrograde orbit, extremely low density." },
-  { system:"WASP-121",         planet:"WASP-121 b",     distance_pc:270.000, color:"#ffcc02", type:"Ultra-hot Jupiter", hz:false, disc_year:2015, notes:"Ultra-hot Jupiter where iron and titanium rain from the atmosphere. Temperature ~2,400 K." },
-  { system:"KELT-9",           planet:"KELT-9 b",       distance_pc:294.000, color:"#ff5722", type:"Ultra-hot Jupiter", hz:false, disc_year:2016, notes:"Hottest known exoplanet — hotter than most stars at ~4,300 K. Atmosphere is vaporizing." },
-  { system:"HAT-P-7",          planet:"HAT-P-7 b",      distance_pc:320.000, color:"#ff7043", type:"Hot Jupiter",  hz:false, disc_year:2008, notes:"Hot Jupiter where corundum (sapphire/ruby) clouds rain from the sky on the night side." },
+  { system:"51 Pegasi",        planet:"51 Peg b",       distance_pc:15.3600, color:"#ffb74d", type:"Hot Jupiter",  hz:false, disc_year:1995, notes:"The first exoplanet found around a Sun-like star. Nobel Prize 2019. Year = 4.2 days." , orbital_period_days:4.231, tidally_locked:true },
+  { system:"HD 209458",        planet:"HD 209458 b",    distance_pc:47.0000, color:"#ffa726", type:"Hot Jupiter",  hz:false, disc_year:1999, notes:"'Osiris' — first exoplanet observed transiting its star. Has an evaporating atmosphere." , orbital_period_days:3.525, tidally_locked:true },
+  { system:"HD 189733",        planet:"HD 189733 b",    distance_pc:19.7600, color:"#4fc3f7", type:"Hot Jupiter",  hz:false, disc_year:2005, notes:"Deep-blue hot Jupiter where it rains molten glass sideways at 9,000 km/h winds." , orbital_period_days:2.219, tidally_locked:true },
+  { system:"WASP-17",          planet:"WASP-17 b",      distance_pc:390.000, color:"#b0bec5", type:"Hot Jupiter",  hz:false, disc_year:2009, notes:"One of the largest exoplanets known — puffed up, retrograde orbit, extremely low density." , orbital_period_days:3.735, tidally_locked:true },
+  { system:"WASP-121",         planet:"WASP-121 b",     distance_pc:270.000, color:"#ffcc02", type:"Ultra-hot Jupiter", hz:false, disc_year:2015, notes:"Ultra-hot Jupiter where iron and titanium rain from the atmosphere. Temperature ~2,400 K." , orbital_period_days:1.275, tidally_locked:true },
+  { system:"KELT-9",           planet:"KELT-9 b",       distance_pc:294.000, color:"#ff5722", type:"Ultra-hot Jupiter", hz:false, disc_year:2016, notes:"Hottest known exoplanet — hotter than most stars at ~4,300 K. Atmosphere is vaporizing." , orbital_period_days:1.481, tidally_locked:true },
+  { system:"HAT-P-7",          planet:"HAT-P-7 b",      distance_pc:320.000, color:"#ff7043", type:"Hot Jupiter",  hz:false, disc_year:2008, notes:"Hot Jupiter where corundum (sapphire/ruby) clouds rain from the sky on the night side." , orbital_period_days:2.205, tidally_locked:true },
   // ── GAS GIANTS & DIRECT IMAGING ──────────────────────────────────────────
-  { system:"HR 8799",          planet:"HR 8799 b",      distance_pc:39.4000, color:"#ce93d8", type:"Gas Giant",    hz:false, disc_year:2008, notes:"First multi-planet system discovered by direct imaging. Young super-Jupiter." },
-  { system:"HR 8799",          planet:"HR 8799 e",      distance_pc:39.4000, color:"#ba68c8", type:"Gas Giant",    hz:false, disc_year:2010, notes:"Innermost directly imaged planet in HR 8799 — hints of water and CO in its atmosphere." },
-  { system:"Beta Pictoris",    planet:"Beta Pic b",     distance_pc:19.4400, color:"#ef9a9a", type:"Gas Giant",    hz:false, disc_year:2008, notes:"Young gas giant caught in the act of forming — directly imaged orbiting a debris disk." },
-  { system:"Beta Pictoris",    planet:"Beta Pic c",     distance_pc:19.4400, color:"#e57373", type:"Gas Giant",    hz:false, disc_year:2019, notes:"Second directly imaged planet — causes gaps in Beta Pic's dusty debris disk." },
-  { system:"Fomalhaut",        planet:"Fomalhaut b",    distance_pc:7.6900,  color:"#80cbc4", type:"Gas Giant",    hz:false, disc_year:2008, notes:"Directly imaged — may be a cloud of debris from a recent collision rather than a solid planet." },
+  { system:"HR 8799",          planet:"HR 8799 b",      distance_pc:39.4000, color:"#ce93d8", type:"Gas Giant",    hz:false, disc_year:2008, notes:"First multi-planet system discovered by direct imaging. Young super-Jupiter." , orbital_period_days:164250.0, tidally_locked:false },
+  { system:"HR 8799",          planet:"HR 8799 e",      distance_pc:39.4000, color:"#ba68c8", type:"Gas Giant",    hz:false, disc_year:2010, notes:"Innermost directly imaged planet in HR 8799 — hints of water and CO in its atmosphere." , orbital_period_days:18000.0, tidally_locked:false },
+  { system:"Beta Pictoris",    planet:"Beta Pic b",     distance_pc:19.4400, color:"#ef9a9a", type:"Gas Giant",    hz:false, disc_year:2008, notes:"Young gas giant caught in the act of forming — directly imaged orbiting a debris disk." , orbital_period_days:8030.0, tidally_locked:false },
+  { system:"Beta Pictoris",    planet:"Beta Pic c",     distance_pc:19.4400, color:"#e57373", type:"Gas Giant",    hz:false, disc_year:2019, notes:"Second directly imaged planet — causes gaps in Beta Pic's dusty debris disk." , orbital_period_days:1200.0, tidally_locked:false },
+  { system:"Fomalhaut",        planet:"Fomalhaut b",    distance_pc:7.6900,  color:"#80cbc4", type:"Gas Giant",    hz:false, disc_year:2008, notes:"Directly imaged — may be a cloud of debris from a recent collision rather than a solid planet." , orbital_period_days:323652.0, tidally_locked:false },
   // ── INTERESTING & EXOTIC ─────────────────────────────────────────────────
-  { system:"55 Cancri",        planet:"55 Cnc d",       distance_pc:12.590,  color:"#a5d6a7", type:"Gas Giant",    hz:false, disc_year:2002, notes:"Long-period Jupiter analog in the 55 Cancri system — 14-year orbit." },
-  { system:"Upsilon Andromedae",planet:"Ups And d",     distance_pc:13.4700, color:"#ffb74d", type:"Gas Giant",    hz:false, disc_year:1999, notes:"Outer gas giant in a multi-planet system around a bright nearby star." },
-  { system:"Gliese 876",       planet:"Gliese 876 d",   distance_pc:4.6900,  color:"#ef9a9a", type:"Rocky",        hz:false, disc_year:2005, notes:"One of the first confirmed super-Earths. Very hot — year = 1.94 days." },
-  { system:"Gliese 876",       planet:"Gliese 876 b",   distance_pc:4.6900,  color:"#ff8a65", type:"Gas Giant",    hz:false, disc_year:1998, notes:"Jupiter-mass planet in a 2:1 resonance with Gliese 876 c. 60 ly away." },
-  { system:"K2-18",            planet:"K2-18 b",        distance_pc:38.0000, color:"#80deea", type:"Water World",  hz:true,  disc_year:2015, notes:"Possible Hycean world — JWST detected carbon molecules. May have a liquid water ocean under a H₂ atmosphere." },
-  { system:"GJ 3512",          planet:"GJ 3512 b",      distance_pc:9.4900,  color:"#ffab91", type:"Gas Giant",    hz:false, disc_year:2019, notes:"Jupiter-mass planet around a tiny M-dwarf — challenges planet formation theories." },
-  { system:"L 98-59",          planet:"L 98-59 b",      distance_pc:10.6200, color:"#b0bec5", type:"Rocky",        hz:false, disc_year:2019, notes:"Sub-Earth mass planet — one of the lightest exoplanets known. Year = 2.25 days." },
-  { system:"L 98-59",          planet:"L 98-59 d",      distance_pc:10.6200, color:"#90a4ae", type:"Rocky",        hz:false, disc_year:2019, notes:"Third planet in L 98-59 — may retain water. Top JWST atmospheric target." },
+  { system:"55 Cancri",        planet:"55 Cnc d",       distance_pc:12.590,  color:"#a5d6a7", type:"Gas Giant",    hz:false, disc_year:2002, notes:"Long-period Jupiter analog in the 55 Cancri system — 14-year orbit." , orbital_period_days:4825.0, tidally_locked:false },
+  { system:"Upsilon Andromedae",planet:"Ups And d",     distance_pc:13.4700, color:"#ffb74d", type:"Gas Giant",    hz:false, disc_year:1999, notes:"Outer gas giant in a multi-planet system around a bright nearby star." , orbital_period_days:1276.46, tidally_locked:false },
+  { system:"Gliese 876",       planet:"Gliese 876 d",   distance_pc:4.6900,  color:"#ef9a9a", type:"Rocky",        hz:false, disc_year:2005, notes:"One of the first confirmed super-Earths. Very hot — year = 1.94 days." , orbital_period_days:1.938, tidally_locked:true },
+  { system:"Gliese 876",       planet:"Gliese 876 b",   distance_pc:4.6900,  color:"#ff8a65", type:"Gas Giant",    hz:false, disc_year:1998, notes:"Jupiter-mass planet in a 2:1 resonance with Gliese 876 c. 60 ly away." , orbital_period_days:60.94, tidally_locked:false },
+  { system:"K2-18",            planet:"K2-18 b",        distance_pc:38.0000, color:"#80deea", type:"Water World",  hz:true,  disc_year:2015, notes:"Possible Hycean world — JWST detected carbon molecules. May have a liquid water ocean under a H₂ atmosphere." , orbital_period_days:32.94, tidally_locked:true },
+  { system:"GJ 3512",          planet:"GJ 3512 b",      distance_pc:9.4900,  color:"#ffab91", type:"Gas Giant",    hz:false, disc_year:2019, notes:"Jupiter-mass planet around a tiny M-dwarf — challenges planet formation theories." , orbital_period_days:203.59, tidally_locked:false },
+  { system:"L 98-59",          planet:"L 98-59 b",      distance_pc:10.6200, color:"#b0bec5", type:"Rocky",        hz:false, disc_year:2019, notes:"Sub-Earth mass planet — one of the lightest exoplanets known. Year = 2.25 days." , orbital_period_days:2.253, tidally_locked:true },
+  { system:"L 98-59",          planet:"L 98-59 d",      distance_pc:10.6200, color:"#90a4ae", type:"Rocky",        hz:false, disc_year:2019, notes:"Third planet in L 98-59 — may retain water. Top JWST atmospheric target." , orbital_period_days:7.451, tidally_locked:true },
 ];
 
 const lyToSec = ly => ly * SPY;
@@ -359,99 +373,145 @@ function ReceivedImage({ mediaURL, mediaType, distanceLY, arrived }) {
   );
 }
 
-// ── CANVAS SCENE ──────────────────────────────────────────────────────────────
-function drawScene(canvas, prog, target) {
-  if (!canvas||!target) return;
-  const ctx=canvas.getContext("2d");
-  const W=canvas.width,H=canvas.height;
-  const p=Math.max(0,Math.min(1,prog));
-  const distanceLY=target._distanceLY!=null?target._distanceLY:target.distance_pc*PC_TO_LY;
-  const col=target.color||"#4fc3f7";
-  ctx.clearRect(0,0,W,H);
-  const bg=ctx.createLinearGradient(0,0,W,0);
-  bg.addColorStop(0,"#010510");bg.addColorStop(0.5,"#020c1e");bg.addColorStop(1,"#010510");
-  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
-  [[W*.2,H*.3,90,"rgba(20,0,60,0.3)"],[W*.75,H*.6,70,"rgba(0,20,80,0.25)"]].forEach(n=>{
-    var g=ctx.createRadialGradient(n[0],n[1],0,n[0],n[1],n[2]);
-    g.addColorStop(0,n[3]);g.addColorStop(1,"transparent");
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(n[0],n[1],n[2],0,Math.PI*2);ctx.fill();
-  });
-  var seed=n=>{var s=n*9301+49297;return(s%233280)/233280;};
-  for(var i=0;i<140;i++){
-    var sx=seed(i*3)*W,sy=seed(i*3+1)*H,sr=seed(i*3+2)*1.4+0.2;
-    ctx.beginPath();ctx.arc(sx,sy,sr,0,Math.PI*2);
-    ctx.fillStyle="rgba(200,220,255,"+(0.2+seed(i*7)*0.65)+")";ctx.fill();
-  }
-  var PX=130,EX=W-120,MY=H/2,span=EX-PX;
-  ctx.font="bold 13px 'IBM Plex Mono',monospace";ctx.fillStyle="rgba(0,200,255,0.35)";ctx.textAlign="center";
-  ctx.fillText("✦  Milky Way  ✦",W/2,22);
-  ctx.strokeStyle="rgba(0,180,255,0.12)";ctx.lineWidth=1;ctx.setLineDash([6,8]);
-  ctx.beginPath();ctx.moveTo(PX,MY);ctx.lineTo(EX,MY);ctx.stroke();ctx.setLineDash([]);
-  ctx.font="12px 'IBM Plex Mono',monospace";ctx.fillStyle="rgba(0,180,255,0.3)";ctx.textAlign="center";
-  ctx.fillText("← "+fmtDelay(distanceLY)+" →",W/2,MY-18);
-  var sX=PX-55,sY=MY-40;
-  var stG=ctx.createRadialGradient(sX,sY,0,sX,sY,22);
-  stG.addColorStop(0,"rgba(255,248,200,1)");stG.addColorStop(0.4,"rgba(255,200,80,0.4)");stG.addColorStop(1,"transparent");
-  ctx.fillStyle=stG;ctx.beginPath();ctx.arc(sX,sY,22,0,Math.PI*2);ctx.fill();
-  ctx.beginPath();ctx.arc(sX,sY,6,0,Math.PI*2);ctx.fillStyle="rgba(255,255,220,1)";ctx.fill();
-  for(var ri=0;ri<8;ri++){var ra=ri*Math.PI/4;ctx.beginPath();ctx.moveTo(sX+Math.cos(ra)*8,sY+Math.sin(ra)*8);ctx.lineTo(sX+Math.cos(ra)*18,sY+Math.sin(ra)*18);ctx.strokeStyle="rgba(255,230,100,0.35)";ctx.lineWidth=1;ctx.stroke();}
-  ctx.beginPath();ctx.arc(PX,MY,30*2.8,0,Math.PI*2);ctx.fillStyle=col+"18";ctx.fill();
-  var pG=ctx.createRadialGradient(PX-9,MY-9,3,PX,MY,30);
-  pG.addColorStop(0,"rgba(255,255,255,0.3)");pG.addColorStop(0.4,col);pG.addColorStop(1,"rgba(0,0,0,0.7)");
-  ctx.beginPath();ctx.arc(PX,MY,30,0,Math.PI*2);ctx.fillStyle=pG;ctx.fill();
-  ctx.save();ctx.beginPath();ctx.arc(PX,MY,30,0,Math.PI*2);ctx.clip();
-  ctx.strokeStyle="rgba(0,0,0,0.12)";ctx.lineWidth=3;
-  [-10,3,14].forEach(dy=>{ctx.beginPath();ctx.ellipse(PX,MY+dy,30,6,0,0,Math.PI*2);ctx.stroke();});
-  ctx.restore();
-  ctx.beginPath();ctx.arc(PX,MY,34,0,Math.PI*2);ctx.strokeStyle="rgba(255,255,255,0.1)";ctx.lineWidth=2.5;ctx.stroke();
-  ctx.beginPath();ctx.ellipse(PX,MY+8,46,12,0,0,Math.PI*2);ctx.strokeStyle="rgba(255,255,255,0.08)";ctx.lineWidth=1.5;ctx.stroke();
-  ctx.font="bold 15px 'IBM Plex Mono',monospace";ctx.fillStyle=col;ctx.textAlign="center";
-  ctx.fillText(target.planet,PX,MY+58);
-  ctx.font="12px 'IBM Plex Mono',monospace";ctx.fillStyle="rgba(0,200,255,0.5)";
-  ctx.fillText(target.system,PX,MY+74);
-  if(p<0.05){var f=1-p/0.05;ctx.beginPath();ctx.arc(PX,MY,30+f*32,0,Math.PI*2);ctx.strokeStyle="rgba(255,255,255,"+(f*0.55)+")";ctx.lineWidth=3;ctx.stroke();}
-  var sigX=PX+span*p;
-  if(p>0){
-    var tLen=Math.min(span*p,220);
-    var tG=ctx.createLinearGradient(sigX-tLen,MY,sigX,MY);
-    tG.addColorStop(0,"transparent");tG.addColorStop(0.6,"rgba(0,200,255,0.07)");tG.addColorStop(1,"rgba(0,235,255,0.65)");
-    ctx.strokeStyle=tG;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(Math.max(PX,sigX-tLen),MY);ctx.lineTo(sigX,MY);ctx.stroke();
-    [0,1,2].forEach(ri=>{ctx.beginPath();ctx.arc(sigX,MY,6+ri*7,0,Math.PI*2);ctx.strokeStyle="rgba(0,225,255,"+(0.55-ri*0.18)+")";ctx.lineWidth=1.3;ctx.stroke();});
-    var ph=ctx.createRadialGradient(sigX,MY,0,sigX,MY,9);
-    ph.addColorStop(0,"rgba(255,255,255,1)");ph.addColorStop(0.4,"rgba(0,245,255,0.95)");ph.addColorStop(1,"transparent");
-    ctx.fillStyle=ph;ctx.beginPath();ctx.arc(sigX,MY,9,0,Math.PI*2);ctx.fill();
-  }
-  if(p>0.04&&p<0.96){
-    var traveledLY=distanceLY*p;
-    ctx.font="12px 'IBM Plex Mono',monospace";ctx.fillStyle="rgba(0,240,255,0.85)";ctx.textAlign="center";
-    ctx.fillText((traveledLY<1?fmtDelay(traveledLY):traveledLY.toFixed(1)+" ly")+" traveled",sigX,MY-28);
-  }
-  [0.25,0.5,0.75].forEach(t=>{
-    var tx=PX+span*t;
-    ctx.strokeStyle="rgba(0,180,255,0.2)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(tx,MY+5);ctx.lineTo(tx,MY+14);ctx.stroke();
-    var tickLY=distanceLY*t;
-    ctx.font="10px 'IBM Plex Mono',monospace";ctx.fillStyle="rgba(0,180,255,0.3)";ctx.textAlign="center";
-    ctx.fillText(tickLY<1?fmtDelay(tickLY):tickLY.toFixed(1)+" ly",tx,MY+26);
-  });
-  var eGl=ctx.createRadialGradient(EX,MY,10,EX,MY,90);
-  eGl.addColorStop(0,"rgba(0,100,255,0.2)");eGl.addColorStop(1,"transparent");
-  ctx.fillStyle=eGl;ctx.beginPath();ctx.arc(EX,MY,90,0,Math.PI*2);ctx.fill();
-  var eG=ctx.createRadialGradient(EX-10,MY-10,3,EX,MY,30);
-  eG.addColorStop(0,"rgba(140,215,255,0.95)");eG.addColorStop(0.3,"#1565c0");eG.addColorStop(0.75,"#0d47a1");eG.addColorStop(1,"rgba(0,6,40,0.9)");
-  ctx.beginPath();ctx.arc(EX,MY,30,0,Math.PI*2);ctx.fillStyle=eG;ctx.fill();
-  ctx.save();ctx.beginPath();ctx.arc(EX,MY,30,0,Math.PI*2);ctx.clip();
-  ctx.fillStyle="rgba(55,168,75,0.75)";
-  [[EX-12,MY-10,10,7,0.3],[EX+8,MY+7,12,8,0.2],[EX-5,MY+12,8,5,0.4]].forEach(v=>{ctx.beginPath();ctx.ellipse(v[0],v[1],v[2],v[3],v[4],0,Math.PI*2);ctx.fill();});
-  ctx.restore();
-  ctx.beginPath();ctx.arc(EX,MY,35,0,Math.PI*2);ctx.strokeStyle="rgba(110,190,255,0.3)";ctx.lineWidth=4;ctx.stroke();
-  ctx.beginPath();ctx.ellipse(EX,MY+10,48,13,0,0,Math.PI*2);ctx.strokeStyle="rgba(100,180,255,0.12)";ctx.lineWidth=1.5;ctx.stroke();
-  ctx.font="bold 15px 'IBM Plex Mono',monospace";ctx.fillStyle="#4fc3f7";ctx.textAlign="center";
-  ctx.fillText("EARTH",EX,MY+58);
-  ctx.font="12px 'IBM Plex Mono',monospace";ctx.fillStyle="rgba(0,200,255,0.5)";ctx.fillText("Observer",EX,MY+74);
-  if(p>0.95){var fl=(p-0.95)/0.05;ctx.beginPath();ctx.arc(EX,MY,30+fl*55,0,Math.PI*2);ctx.strokeStyle="rgba(0,255,200,"+(1-fl)*0.9+")";ctx.lineWidth=3.5;ctx.stroke();var bg2=ctx.createRadialGradient(EX,MY,0,EX,MY,100);bg2.addColorStop(0,"rgba(0,255,180,"+(fl*0.3)+")");bg2.addColorStop(1,"transparent");ctx.fillStyle=bg2;ctx.beginPath();ctx.arc(EX,MY,100,0,Math.PI*2);ctx.fill();}
-  if(p>=1){ctx.font="bold 16px 'IBM Plex Mono',monospace";ctx.fillStyle="rgba(0,245,110,0.95)";ctx.textAlign="center";ctx.fillText("✓  SIGNAL WAVEFRONT REACHED EARTH",EX,MY-66);ctx.font="13px 'IBM Plex Mono',monospace";ctx.fillStyle="rgba(0,200,255,0.75)";ctx.fillText("Delay: "+fmtDelay(distanceLY),EX,MY-48);}
+// ── CINEMATIC DEEP SPACE CANVAS ──────────────────────────────────────────────
+function useDeepSpaceCanvas(canvasRef, prog, target) {
+  const starsRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !target) return;
+    const ctx = canvas.getContext("2d");
+    const distanceLY = target._distanceLY != null ? target._distanceLY : target.distance_pc * PC_TO_LY;
+    const col = target.color || "#4fc3f7";
+
+    // Generate three parallax star layers once
+    if (!starsRef.current) {
+      starsRef.current = [
+        Array.from({length:200}, () => ({ x:Math.random(), y:Math.random(), r:Math.random()*0.8+0.2, a:Math.random()*0.5+0.1, sp:Math.random()*0.02+0.005, ph:Math.random()*Math.PI*2, par:0.02, hex:null })),
+        Array.from({length:80},  () => ({ x:Math.random(), y:Math.random(), r:Math.random()*1.2+0.4, a:Math.random()*0.6+0.2, sp:Math.random()*0.03+0.01,  ph:Math.random()*Math.PI*2, par:0.06, hex:Math.random()>0.8?(Math.random()>0.5?"#ffd8a8":"#a8c8ff"):null })),
+        Array.from({length:30},  () => ({ x:Math.random(), y:Math.random(), r:Math.random()*2.0+0.8, a:Math.random()*0.7+0.3, sp:Math.random()*0.04+0.02,  ph:Math.random()*Math.PI*2, par:0.14, hex:Math.random()>0.7?(Math.random()>0.5?"#ffe4b5":"#b8d4ff"):null }))
+      ];
+    }
+
+    let animating = true;
+    let raf;
+
+    const draw = (ts) => {
+      if (!animating) return;
+      const t = ts * 0.001;
+      const W = canvas.width, H = canvas.height;
+      const p = Math.max(0, Math.min(1, prog));
+      ctx.clearRect(0,0,W,H);
+
+      // Background
+      const bgG = ctx.createLinearGradient(0,0,W,H);
+      bgG.addColorStop(0,"#000408"); bgG.addColorStop(0.4,"#010810"); bgG.addColorStop(1,"#000408");
+      ctx.fillStyle=bgG; ctx.fillRect(0,0,W,H);
+
+      // Nebula clouds
+      const drawNebula = (x, y, r, c) => {
+        const g = ctx.createRadialGradient(x,y,0,x,y,r);
+        g.addColorStop(0,c); g.addColorStop(1,"rgba(0,0,0,0)");
+        ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+      };
+      drawNebula(W*0.18+Math.sin(t*0.05)*3, H*0.45, W*0.22, "rgba(20,0,80,0.20)");
+      drawNebula(W*0.82+Math.sin(t*0.04)*3, H*0.55, W*0.20, "rgba(0,30,80,0.18)");
+      drawNebula(W*0.50, H*0.50, W*0.35, "rgba(0,10,40,0.12)");
+
+      // Parallax stars
+      const par = p * 60;
+      starsRef.current.forEach(layer => layer.forEach(s => {
+        const tw = 0.4 + 0.6*(0.5+0.5*Math.sin(t*s.sp*60+s.ph));
+        const alpha = s.a * tw;
+        const sx = ((s.x*W) - par*s.par + W) % W;
+        const sy = s.y * H;
+        if (s.hex) {
+          const h=s.hex.slice(1);
+          ctx.fillStyle=`rgba(${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)},${alpha})`;
+        } else {
+          ctx.fillStyle=`rgba(200,220,255,${alpha})`;
+        }
+        ctx.beginPath(); ctx.arc(sx,sy,s.r,0,Math.PI*2); ctx.fill();
+        if (s.par>0.1 && s.r>1.5 && alpha>0.5) {
+          ctx.strokeStyle=`rgba(200,220,255,${alpha*0.3})`; ctx.lineWidth=0.5;
+          ctx.beginPath(); ctx.moveTo(sx-s.r*3,sy); ctx.lineTo(sx+s.r*3,sy); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(sx,sy-s.r*3); ctx.lineTo(sx,sy+s.r*3); ctx.stroke();
+        }
+      }));
+
+      const PX=110, EX=W-100, MY=H/2, span=EX-PX;
+
+      // Galaxy label
+      ctx.font="bold 11px 'IBM Plex Mono',monospace"; ctx.fillStyle="rgba(0,200,255,0.22)"; ctx.textAlign="center";
+      ctx.fillText("✦  MILKY WAY GALAXY  ✦", W/2, 16);
+
+      // Travel path
+      ctx.strokeStyle="rgba(0,180,255,0.07)"; ctx.lineWidth=1; ctx.setLineDash([4,8]);
+      ctx.beginPath(); ctx.moveTo(PX,MY); ctx.lineTo(EX,MY); ctx.stroke(); ctx.setLineDash([]);
+      ctx.font="11px 'IBM Plex Mono',monospace"; ctx.fillStyle="rgba(0,180,255,0.32)"; ctx.textAlign="center";
+      ctx.fillText("← "+fmtDelay(distanceLY)+" →", W/2, MY-20);
+
+      // SOURCE STAR
+      const sX=PX-50, sY=MY-28, sp2=1+0.06*Math.sin(t*1.8);
+      for(let g=4;g>=1;g--){ const gr=ctx.createRadialGradient(sX,sY,0,sX,sY,26*g); gr.addColorStop(0,"rgba(255,240,160,0.07)"); gr.addColorStop(1,"rgba(0,0,0,0)"); ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(sX,sY,26*g,0,Math.PI*2); ctx.fill(); }
+      for(let r=0;r<12;r++){ const a=(r/12)*Math.PI*2+t*0.3; const rl=13+5*Math.sin(t*2+r); ctx.beginPath(); ctx.moveTo(sX+Math.cos(a)*7,sY+Math.sin(a)*7); ctx.lineTo(sX+Math.cos(a)*rl,sY+Math.sin(a)*rl); ctx.strokeStyle=`rgba(255,220,80,${0.18+0.12*Math.sin(t*1.5+r)})`; ctx.lineWidth=1.2; ctx.stroke(); }
+      const sGrd=ctx.createRadialGradient(sX-2,sY-2,0,sX,sY,10*sp2); sGrd.addColorStop(0,"rgba(255,255,240,1)"); sGrd.addColorStop(0.3,"rgba(255,220,100,0.9)"); sGrd.addColorStop(0.7,"rgba(255,160,30,0.4)"); sGrd.addColorStop(1,"rgba(255,100,0,0)"); ctx.fillStyle=sGrd; ctx.beginPath(); ctx.arc(sX,sY,10*sp2,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(sX,sY,4,0,Math.PI*2); ctx.fillStyle="rgba(255,255,250,1)"; ctx.fill();
+
+      // SOURCE PLANET
+      const pp=1+0.03*Math.sin(t*1.2);
+      for(let g=3;g>=1;g--){ const hg=ctx.createRadialGradient(PX,MY,24,PX,MY,38*g); hg.addColorStop(0,col+"22"); hg.addColorStop(1,"rgba(0,0,0,0)"); ctx.fillStyle=hg; ctx.beginPath(); ctx.arc(PX,MY,38*g,0,Math.PI*2); ctx.fill(); }
+      const pGrd=ctx.createRadialGradient(PX-8,MY-8,2,PX,MY,28*pp); pGrd.addColorStop(0,"rgba(255,255,255,0.35)"); pGrd.addColorStop(0.3,col); pGrd.addColorStop(0.7,col+"aa"); pGrd.addColorStop(1,"rgba(0,0,0,0.8)"); ctx.fillStyle=pGrd; ctx.beginPath(); ctx.arc(PX,MY,28*pp,0,Math.PI*2); ctx.fill();
+      ctx.save(); ctx.beginPath(); ctx.arc(PX,MY,28,0,Math.PI*2); ctx.clip(); ctx.strokeStyle="rgba(0,0,0,0.18)"; ctx.lineWidth=4; [-8,4,14].forEach(dy=>{ctx.beginPath();ctx.ellipse(PX,MY+dy,28,7,0,0,Math.PI*2);ctx.stroke();}); ctx.restore();
+      if(target.type&&(target.type.includes("Jupiter")||target.type.includes("Gas"))){ ctx.beginPath(); ctx.ellipse(PX,MY+6,46,10,0,0,Math.PI*2); ctx.strokeStyle=col+"44"; ctx.lineWidth=3; ctx.stroke(); }
+      ctx.beginPath(); ctx.arc(PX,MY,32,0,Math.PI*2); ctx.strokeStyle=col+"33"; ctx.lineWidth=4; ctx.stroke();
+      if(p<0.04){ const ef=1-p/0.04; ctx.beginPath(); ctx.arc(PX,MY,28+ef*40,0,Math.PI*2); ctx.strokeStyle=`rgba(255,255,255,${ef*0.6})`; ctx.lineWidth=2.5; ctx.stroke(); ctx.beginPath(); ctx.arc(PX,MY,28+ef*70,0,Math.PI*2); ctx.strokeStyle=`rgba(255,255,255,${ef*0.25})`; ctx.lineWidth=1.5; ctx.stroke(); }
+      ctx.font="bold 13px 'IBM Plex Mono',monospace"; ctx.fillStyle=col; ctx.textAlign="center"; ctx.fillText(target.planet,PX,MY+50);
+      ctx.font="10px 'IBM Plex Mono',monospace"; ctx.fillStyle="rgba(0,200,255,0.45)"; ctx.fillText(target.system,PX,MY+63);
+
+      // PHOTON SIGNAL
+      if(p>0){
+        const sigX=PX+span*p;
+        const trailLen=Math.min(span*p,300);
+        const tGrd=ctx.createLinearGradient(Math.max(PX,sigX-trailLen),MY,sigX,MY);
+        tGrd.addColorStop(0,"rgba(0,200,255,0)"); tGrd.addColorStop(0.6,"rgba(0,220,255,0.04)"); tGrd.addColorStop(1,"rgba(0,240,255,0.55)");
+        ctx.strokeStyle=tGrd; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(Math.max(PX,sigX-trailLen),MY); ctx.lineTo(sigX,MY); ctx.stroke();
+        const pulseP=(t*3)%1;
+        [0,0.33,0.66].forEach(off=>{ const pf=(pulseP+off)%1; const pr=pf*22; const pa=(1-pf)*0.5; ctx.beginPath(); ctx.arc(sigX,MY,pr,0,Math.PI*2); ctx.strokeStyle=`rgba(0,232,255,${pa})`; ctx.lineWidth=1.5; ctx.stroke(); });
+        const phG=ctx.createRadialGradient(sigX,MY,0,sigX,MY,14); phG.addColorStop(0,"rgba(255,255,255,1)"); phG.addColorStop(0.3,"rgba(100,240,255,0.9)"); phG.addColorStop(0.7,"rgba(0,200,255,0.4)"); phG.addColorStop(1,"rgba(0,150,255,0)"); ctx.fillStyle=phG; ctx.beginPath(); ctx.arc(sigX,MY,14,0,Math.PI*2); ctx.fill();
+        const fA=0.35+0.15*Math.sin(t*4);
+        [-1,1].forEach(dir=>{ const fG=ctx.createLinearGradient(sigX,MY,sigX+dir*40,MY); fG.addColorStop(0,`rgba(180,240,255,${fA})`); fG.addColorStop(1,"rgba(0,200,255,0)"); ctx.strokeStyle=fG; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(sigX,MY); ctx.lineTo(sigX+dir*40,MY); ctx.stroke(); });
+        if(p>0.04&&p<0.96){ const tLY=distanceLY*p; ctx.font="11px 'IBM Plex Mono',monospace"; ctx.fillStyle="rgba(0,240,255,0.8)"; ctx.textAlign="center"; ctx.fillText((tLY<1?fmtDelay(tLY):tLY.toFixed(2)+" ly")+" traveled",sigX,MY-26); }
+        [0.25,0.5,0.75].forEach(frac=>{ const mx=PX+span*frac; if(mx<sigX){ctx.beginPath();ctx.arc(mx,MY,3,0,Math.PI*2);ctx.fillStyle="rgba(0,200,255,0.5)";ctx.fill();} ctx.strokeStyle="rgba(0,180,255,0.15)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(mx,MY+4);ctx.lineTo(mx,MY+12);ctx.stroke(); const mLY=distanceLY*frac; ctx.font="9px 'IBM Plex Mono',monospace";ctx.fillStyle="rgba(0,180,255,0.25)";ctx.textAlign="center";ctx.fillText(mLY<1?fmtDelay(mLY):mLY.toFixed(1)+" ly",mx,MY+22); });
+      }
+
+      // EARTH
+      const magG=ctx.createRadialGradient(EX,MY,20,EX,MY,110); magG.addColorStop(0,"rgba(0,80,200,0.12)"); magG.addColorStop(1,"rgba(0,0,0,0)"); ctx.fillStyle=magG; ctx.beginPath(); ctx.arc(EX,MY,110,0,Math.PI*2); ctx.fill();
+      const eGrd=ctx.createRadialGradient(EX-10,MY-10,2,EX,MY,28); eGrd.addColorStop(0,"rgba(140,215,255,0.95)"); eGrd.addColorStop(0.25,"#1a6fbb"); eGrd.addColorStop(0.6,"#0d47a1"); eGrd.addColorStop(1,"rgba(0,6,40,0.95)"); ctx.fillStyle=eGrd; ctx.beginPath(); ctx.arc(EX,MY,28,0,Math.PI*2); ctx.fill();
+      ctx.save(); ctx.beginPath(); ctx.arc(EX,MY,28,0,Math.PI*2); ctx.clip(); ctx.fillStyle="rgba(55,168,75,0.75)"; [[EX-12,MY-10,10,7,0.3],[EX+8,MY+7,12,8,0.2],[EX-5,MY+12,8,5,0.4],[EX+14,MY-8,6,4,0.1]].forEach(v=>{ctx.beginPath();ctx.ellipse(v[0],v[1],v[2],v[3],v[4],0,Math.PI*2);ctx.fill();}); ctx.restore();
+      const atmA=0.18+0.05*Math.sin(t*0.8); const atmG=ctx.createRadialGradient(EX,MY,24,EX,MY,40); atmG.addColorStop(0,"rgba(100,180,255,0)"); atmG.addColorStop(0.7,`rgba(100,180,255,${atmA})`); atmG.addColorStop(1,"rgba(60,120,255,0)"); ctx.fillStyle=atmG; ctx.beginPath(); ctx.arc(EX,MY,40,0,Math.PI*2); ctx.fill();
+      const moonA=t*0.5; const moonX=EX+Math.cos(moonA)*44; const moonY=MY+Math.sin(moonA)*18; ctx.beginPath(); ctx.arc(moonX,moonY,3.5,0,Math.PI*2); ctx.fillStyle="rgba(200,210,220,0.7)"; ctx.fill();
+      ctx.font="bold 13px 'IBM Plex Mono',monospace"; ctx.fillStyle="#4fc3f7"; ctx.textAlign="center"; ctx.fillText("EARTH",EX,MY+50);
+      ctx.font="10px 'IBM Plex Mono',monospace"; ctx.fillStyle="rgba(0,200,255,0.45)"; ctx.fillText("Observer",EX,MY+63);
+
+      // Arrival effect
+      if(p>0.95){ const fl=(p-0.95)/0.05; ctx.beginPath(); ctx.arc(EX,MY,28+fl*60,0,Math.PI*2); ctx.strokeStyle=`rgba(0,255,180,${(1-fl)*0.8})`; ctx.lineWidth=3; ctx.stroke(); ctx.beginPath(); ctx.arc(EX,MY,28+fl*100,0,Math.PI*2); ctx.strokeStyle=`rgba(0,255,180,${(1-fl)*0.3})`; ctx.lineWidth=2; ctx.stroke(); }
+      if(p>=1){ ctx.font="bold 14px 'IBM Plex Mono',monospace"; ctx.fillStyle="rgba(0,245,110,0.95)"; ctx.textAlign="center"; ctx.fillText("✓  SIGNAL WAVEFRONT REACHED EARTH",EX,MY-52); ctx.font="11px 'IBM Plex Mono',monospace"; ctx.fillStyle="rgba(0,200,255,0.7)"; ctx.fillText("Delay: "+fmtDelay(distanceLY),EX,MY-38); }
+
+      raf = requestAnimationFrame(draw);
+    };
+
+    raf = requestAnimationFrame(draw);
+    return () => { animating=false; cancelAnimationFrame(raf); };
+  }, [target, prog]);
 }
 
+function DeepSpaceCanvas({ prog, target }) {
+  const canvasRef = useRef(null);
+  useDeepSpaceCanvas(canvasRef, prog, target);
+  return <canvas ref={canvasRef} width={900} height={240} style={{width:"100%",height:240,display:"block"}}/>;
+}
+
+// ── STARFIELD ─────────────────────────────────────────────────────────────────
 // ── STARFIELD ────────────────────────────────────────────────────────────────
 function StarField() {
   const ref=useRef();
@@ -786,7 +846,7 @@ export default function App() {
   const [prog,setProg]=useState(0);
   const [playing,setPlaying]=useState(false);
   const [spd,setSpd]=useState(1);
-  const playR=useRef(false),spdR=useRef(1),progR=useRef(0),rafR=useRef(),lastT=useRef(null),canvasRef=useRef();
+  const playR=useRef(false),spdR=useRef(1),progR=useRef(0),rafR=useRef(),lastT=useRef(null);
 
   useEffect(()=>{spdR.current=spd;},[spd]);
   useEffect(()=>{progR.current=prog;},[prog]);
@@ -822,7 +882,7 @@ export default function App() {
   const delaySec=lyToSec(distanceLY);
   const delayYears=delaySec/SPY;
 
-  useEffect(()=>{drawScene(canvasRef.current,prog,target);},[prog,target]);
+  // canvas rendered by DeepSpaceCanvas component
 
   const obsDT=new Date(obsD+"T"+(obsT||"00:00")+":00Z");
   const evDT=autoTime?addSec(obsDT,-delaySec):new Date(evD+"T"+(evT||"00:00")+":00Z");
@@ -839,6 +899,12 @@ export default function App() {
   const ageWhenSeen=age0+delayYears;
   const hiddenByDelayNow=actualNow-age0;
   const aliveWhenSeen=ageWhenSeen<ls;
+  // Local planetary year calculations
+  const orbPeriod = (target.orbital_period_days && !isNaN(target.orbital_period_days)) ? target.orbital_period_days : 365.25;
+  const localYearsTravelTime = earthYearsToLocalYears(delayYears, orbPeriod);
+  const localYearsActualNow  = earthYearsToLocalYears(actualNow, orbPeriod);
+  const localYearsHidden     = earthYearsToLocalYears(hiddenByDelayNow, orbPeriod);
+
   const aliveNow=actualNow<ls;
   let recS="not_emitted";
   if(simProg>0&&simProg<1)recS="traveling";
@@ -975,7 +1041,7 @@ export default function App() {
             onMouseEnter={e=>{e.currentTarget.style.borderColor=accent;e.currentTarget.style.background="rgba(0,200,255,0.06)";}}
             onMouseLeave={e=>{e.currentTarget.style.borderColor=mediaURL?"rgba(0,232,122,0.5)":border;e.currentTarget.style.background=mediaURL?"rgba(0,232,122,0.04)":"rgba(0,10,30,0.5)";}}>
             {mediaURL?(<div><div style={{fontSize:28,marginBottom:6}}>{mediaType==="video"?"🎬":"🖼️"}</div><div style={{fontSize:16,color:ok,fontWeight:600,marginBottom:4}}>✓  {mediaName}</div><div style={{fontSize:14,color:dim}}>{mediaType==="video"&&videoDur>0?"Duration: "+videoDur.toFixed(1)+"s — ":""}Click to change</div></div>)
-            :(<div><div style={{fontSize:36,marginBottom:8}}>📷</div><div style={{fontSize:17,color:bright,fontWeight:600,marginBottom:6}}>Upload your image or video</div><div style={{fontSize:15,color:dim}}>This is what you're sending from {target.planet} — watch it arrive piece by piece on Earth</div></div>)}
+            :(<div><div style={{fontSize:36,marginBottom:8}}>📷</div><div style={{fontSize:17,color:bright,fontWeight:600,marginBottom:6}}>Upload your image or video (optional)</div><div style={{fontSize:15,color:dim}}>This is what you're sending from {target.planet} — watch it arrive piece by piece on Earth</div></div>)}
           </div>
           <input ref={fileRef} type="file" accept="image/*,video/mp4,video/webm,video/ogg" style={{display:"none"}} onChange={e=>handleMedia(e.target.files[0])}/>
           <div className="g2" style={{marginBottom:14}}>
@@ -1003,7 +1069,7 @@ export default function App() {
             </div>
             <span style={{fontSize:14,color:dim}}>{target.planet}  →  Earth</span>
           </div>
-          <canvas ref={canvasRef} width={900} height={220} style={{width:"100%",height:220,display:"block"}}/>
+          <DeepSpaceCanvas prog={prog} target={target}/>
           <div style={{padding:"18px 24px",background:"rgba(0,6,22,0.95)",borderTop:"1px solid "+border}}>
             <div style={{marginBottom:14}}>
               <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
@@ -1085,6 +1151,14 @@ export default function App() {
             <InfoCard label="Actual age right now" value={fmtAge(actualNow)} color={aliveNow?ok:danger} sub={aliveNow?"Alive at this simulated moment.":"Would have exceeded the chosen lifespan."}/>
             <InfoCard label="Age hidden by delay" value={fmtAge(hiddenByDelayNow)} color={accent} sub="This grows while the photon is traveling."/>
           </div>
+          <div style={{fontSize:11,color:dim,textTransform:"uppercase",letterSpacing:2,margin:"4px 0 10px",paddingTop:8,borderTop:"1px solid rgba(0,180,255,0.1)"}}>
+            🪐 Local Planetary Time on {target.planet} — 1 local year = {target.orbital_period_days < 1 ? (target.orbital_period_days*24).toFixed(1)+" Earth hours" : (target.orbital_period_days||365.25).toFixed(2)+" Earth days"}{target.tidally_locked?" · Tidally locked":""}
+          </div>
+          <div className="g3" style={{marginBottom:16}}>
+            <InfoCard label="Transit (local years)" value={fmtLocalYears(localYearsTravelTime, orbPeriod)} color={"#f5c842"} sub={"How many "+target.planet+" years the signal traveled"}/>
+            <InfoCard label="Hidden age (local yrs)" value={fmtLocalYears(localYearsHidden, orbPeriod)} color={"#ce93d8"} sub={"Local years the delay conceals"}/>
+            <InfoCard label="Actual age (local yrs)" value={fmtLocalYears(localYearsActualNow, orbPeriod)} color={aliveNow?ok:danger} sub={"Person's age in "+target.planet+" local years"}/>
+          </div>
           <div className="g3" style={{marginBottom:16}}>
             <InfoCard label="Actual target age at first Earth reception" value={fmtAge(ageWhenSeen)} color={aliveWhenSeen?ok:danger} sub={aliveWhenSeen?"Still alive when Earth first receives the signal.":"Already beyond lifespan when Earth first receives the signal."}/>
             <InfoCard label="Photon simulation time" value={fmtDT(simDT)} color={bright} sub="Live time controlled by PLAY and the slider."/>
@@ -1099,19 +1173,12 @@ export default function App() {
           <div style={{padding:"18px 22px",background:"rgba(0,200,255,0.05)",borderRadius:12,borderLeft:"4px solid rgba(0,200,255,0.4)",fontSize:16,color:dim,lineHeight:1.9}}>
             <strong style={{color:bright}}>Live interpretation: </strong>
             {recS==="not_emitted"&&<span>The event is defined at <strong style={{color:target.color}}>{target.planet}</strong>, but no photon has been launched yet.</span>}
-            {recS==="traveling"&&<span>The photon wavefront has traveled <strong style={{color:accent}}>{fmtDelay(distanceLY*simProg)}</strong>. During that time, the real person has aged to <strong style={{color:aliveNow?ok:danger}}>{fmtAge(actualNow)}</strong>, but Earth still sees <strong style={{color:warn}}>nothing</strong>.</span>}
-            {recS==="arrived"&&<span>Earth is reconstructing the signal piece by piece. It sees the person at <strong style={{color:accent}}>{fmtAge(apparentAge)}</strong>, while the real person is <strong style={{color:aliveNow?ok:danger}}>{fmtAge(actualNow)}</strong>. The delay hides <strong style={{color:accent}}>{fmtAge(hiddenByDelayNow)}</strong> of aging.</span>}
+            {recS==="traveling"&&<span>The photon wavefront has traveled <strong style={{color:accent}}>{fmtDelay(distanceLY*simProg)}</strong>. During that time, the real person has aged to <strong style={{color:aliveNow?ok:danger}}>{fmtAge(actualNow)}</strong> (<strong style={{color:"#f5c842"}}>{fmtLocalYears(localYearsActualNow,orbPeriod)}</strong> on {target.planet}), but Earth still sees <strong style={{color:warn}}>nothing</strong>.</span>}
+            {recS==="arrived"&&<span>Earth is reconstructing the signal piece by piece. It sees the person at <strong style={{color:accent}}>{fmtAge(apparentAge)}</strong>, while the real person is <strong style={{color:aliveNow?ok:danger}}>{fmtAge(actualNow)}</strong> (<strong style={{color:"#f5c842"}}>{fmtLocalYears(localYearsActualNow,orbPeriod)}</strong> local years on {target.planet}). The delay hides <strong style={{color:accent}}>{fmtAge(hiddenByDelayNow)}</strong> ({fmtLocalYears(localYearsHidden,orbPeriod)} local years) of aging.</span>}
           </div>
         </div>
 
-        {/* PLANET EXPLORER — always open */}
-        <div style={{background:panel,border:"1px solid "+border,borderRadius:14,padding:"20px 22px",marginBottom:14}}>
-          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
-            <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:13,color:accent,letterSpacing:2}}>🌍  PLANET EXPLORER</div>
-            <div style={{fontSize:12,color:dim}}>— click any planet to see its light-delay stats</div>
-          </div>
-          <PlanetExplorer/>
-        </div>
+
 
         {/* SCIENTIFIC ASSUMPTIONS */}
         <details style={{background:panel,border:"1px solid "+border,borderRadius:14,padding:"16px 22px",marginBottom:14}}>
