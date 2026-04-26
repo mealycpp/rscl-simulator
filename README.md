@@ -24,7 +24,7 @@
 
 **Earth Lookback Simulator** is an interactive astrophysical visualization tool that models a fundamental reality of remote observation:
 
-> When Earth observes a distant target, it does **not** observe that target in its instantaneous present state.  
+> When Earth observes a distant target, it does **not** observe that target in its instantaneous present state.
 > It observes the target through a delay imposed by the **finite speed of light**.
 
 This platform allows a user to choose a planetary target, define an event at the source, upload an image or video, and watch a photon signal propagate toward Earth. The simulator distinguishes between:
@@ -42,6 +42,170 @@ Astronomical distances are often quoted in **light-years**, but that term is fre
 A **light-year is a distance**, not a time unit. Once the propagation speed is fixed at `c`, that distance immediately implies a **light-travel time**.
 
 This simulator was built to make that relationship computationally explicit, visually intuitive, and scientifically grounded.
+
+---
+
+## 🧮 Mathematical Model
+
+### Quick Summary
+
+```
+t_travel = d / c
+
+t_arrival = t_event + t_travel
+
+age_apparent = age_at_event
+age_actual   = age_at_event + t_travel
+age_hidden   = t_travel
+```
+
+If distance is given in light-years and speed of light is 1 ly/yr,
+then t_travel (in years) equals d (in light-years) numerically.
+
+---
+
+### Full Breakdown
+
+#### Variables
+
+```
+d            = distance from source to Earth                    [light-years, ly]
+c            = speed of light = 1                              [ly / yr]  (natural units)
+t_event      = time at which the event occurs                  [years, yr]
+t_travel     = time for light to travel from source to Earth   [yr]
+t_arrival    = time at which the signal arrives at Earth       [yr]
+age_event    = age of the subject at the moment the event occurs        [yr]
+age_apparent = age Earth perceives the subject to be upon signal arrival
+age_actual   = true age of the subject at the moment Earth receives the signal
+age_hidden   = temporal gap concealed by light-travel delay
+```
+
+---
+
+#### 1. Light-Travel Time
+
+The time it takes for a photon to travel from the source to Earth:
+
+```
+t_travel = d / c
+```
+
+In natural units where c = 1 ly/yr:
+
+```
+t_travel [yr] = d [ly]
+```
+
+This means a source 4.223 light-years away produces a signal that takes
+exactly 4.223 years to reach Earth — no approximation needed.
+
+---
+
+#### 2. Signal Arrival Time
+
+If the event occurs at time t_event (measured from some reference epoch):
+
+```
+t_arrival = t_event + t_travel
+          = t_event + d / c
+```
+
+Earth cannot observe the event until t_arrival.
+Everything between t_event and t_arrival is invisible to Earth.
+
+---
+
+#### 3. Apparent Age vs. Actual Age
+
+When Earth receives the signal, the subject in the signal appears to be:
+
+```
+age_apparent = age_event
+```
+
+Earth sees the subject frozen at the age they were when the event occurred.
+But in reality, time has continued to pass at the source:
+
+```
+age_actual = age_event + t_travel
+           = age_event + d / c
+```
+
+The gap between what Earth sees and what is actually true:
+
+```
+age_hidden = age_actual - age_apparent
+           = t_travel
+           = d / c
+```
+
+The hidden age is exactly equal to the light-travel time.
+
+---
+
+#### 4. Worked Example
+
+```
+Target distance      d          = 4.223 ly        (Proxima Centauri b, approx.)
+Speed of light       c          = 1 ly/yr
+Age at event         age_event  = 25 yr
+Event time           t_event    = 0 yr             (reference epoch)
+
+Light-travel time:
+  t_travel  = d / c  =  4.223 / 1  =  4.223 yr
+
+Signal arrival time:
+  t_arrival = t_event + t_travel  =  0 + 4.223  =  4.223 yr
+
+Apparent age (what Earth sees):
+  age_apparent = 25 yr
+
+Actual age at arrival:
+  age_actual = 25 + 4.223  =  29.223 yr
+
+Age hidden by delay:
+  age_hidden = 4.223 yr
+```
+
+---
+
+#### 5. Relativistic Notes and Model Limitations
+
+This simulator operates in the **non-relativistic limit**, which is valid when:
+
+```
+v_source << c       (source velocity is negligible relative to c)
+```
+
+In this regime:
+
+- No time dilation is applied (Lorentz factor gamma = 1)
+- No gravitational redshift is modeled
+- The source and Earth share a common reference frame
+- The speed of light is treated as exactly c in all directions
+
+**What this model does NOT account for:**
+
+```
+1. Special relativistic time dilation
+      t_proper = t_coordinate * sqrt(1 - v^2/c^2)
+      -- relevant only if the source is moving at a significant fraction of c
+
+2. Gravitational time dilation (General Relativity)
+      t_surface = t_infinity * sqrt(1 - 2GM / rc^2)
+      -- relevant near massive compact objects (neutron stars, black holes)
+
+3. Cosmological redshift
+      z = (lambda_observed - lambda_emitted) / lambda_emitted
+      -- relevant for extragalactic sources at cosmological distances
+
+4. Proper motion of the source
+      -- changes d over time, making t_travel a function of t_event
+```
+
+For targets at stellar distances (< ~100 ly) with low relative velocities,
+the non-relativistic model used here introduces negligible error
+and is appropriate for educational and visualization purposes.
 
 ---
 
@@ -69,31 +233,6 @@ Quantify:
 - event time
 - arrival time
 - apparent age vs. actual age
-
----
-
-## 🧠 Scientific Model
-
-The simulator currently uses a simplified but physically meaningful model:
-
-- A target is assigned a distance from Earth.
-- Light-travel time is computed as:
-
-```text
-travel time = distance / c
-```
-
-If distance is expressed in light-years, then the numerical travel time in years is equal to that distance.
-
-The received signal therefore represents a past state of the source.
-
-### Example
-
-If a person is 25 years old when an event occurs on a target 4.223 light-years away:
-
-- Earth sees the person at age **25**
-- Actual target age at first Earth reception is about **29.223**
-- Age hidden by delay is about **4.223 years**
 
 ---
 
@@ -164,7 +303,7 @@ Future expansions may include:
 
 - richer astrophysical catalogs
 - stronger physical parameterization
-- more advanced signal models
+- more advanced signal models (including relativistic corrections)
 - server-backed data collection for end-user interaction studies
 
 ---
