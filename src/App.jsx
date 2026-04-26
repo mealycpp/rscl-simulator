@@ -15,32 +15,34 @@ const TARGETS = [
   { galaxy:"Milky Way", system:"Kepler-452",        planet:"Kepler-452 b",  distance_pc:551.727, color:"#ffcc80", status:"⚠ Controversial", disc_year:2015, notes:"Flagged as controversial by NASA — may be a false positive." },
 ];
 
-const lyToSec    = ly => ly * SPY;
-const secToYr    = s  => s / SPY;
-const addSec     = (d, s) => new Date(d.getTime() + s * 1000);
-const secBetween = (a, b) => (b.getTime() - a.getTime()) / 1000;
+const lyToSec = ly => ly * SPY;
+const secToYr = s => s / SPY;
+const addSec = (d, s) => new Date(d.getTime() + s * 1000);
 
 function toDistanceLY(v, u) {
   if (u === "light-minutes") return (v * 60) / SPY;
-  if (u === "light-hours")   return (v * 3600) / SPY;
-  if (u === "light-days")    return (v * 86400) / SPY;
-  if (u === "light-years")   return v;
-  if (u === "parsecs")       return v * PC_TO_LY;
+  if (u === "light-hours") return (v * 3600) / SPY;
+  if (u === "light-days") return (v * 86400) / SPY;
+  if (u === "light-years") return v;
+  if (u === "parsecs") return v * PC_TO_LY;
   return v;
 }
+
 function fmtDelay(distanceLY) {
   const s = lyToSec(distanceLY);
-  if (s < 120)    return s.toFixed(1) + " seconds";
-  if (s < 7200)   return (s / 60).toFixed(1) + " minutes";
+  if (s < 120) return s.toFixed(1) + " seconds";
+  if (s < 7200) return (s / 60).toFixed(1) + " minutes";
   if (s < 172800) return (s / 3600).toFixed(1) + " hours";
-  if (s < SPY)    return (s / 86400).toFixed(1) + " days";
+  if (s < SPY) return (s / 86400).toFixed(1) + " days";
   if (distanceLY < 10) return distanceLY.toFixed(3) + " light-years";
   return Math.round(distanceLY).toLocaleString() + " light-years";
 }
+
 function fmtDT(d) {
   if (!d || isNaN(d.getTime())) return "—";
   return d.toISOString().replace("T", " ").slice(0, 19) + " UTC";
 }
+
 function fmtAge(n) {
   if (isNaN(n)) return "—";
   return n.toLocaleString(undefined, { maximumFractionDigits: 1 }) + " yrs";
@@ -325,7 +327,8 @@ function StarField() {
       W = c.width = window.innerWidth;
       H = c.height = window.innerHeight;
       stars = Array.from({ length: 280 }, () => ({
-        x: Math.random() * W, y: Math.random() * H,
+        x: Math.random() * W,
+        y: Math.random() * H,
         r: Math.random() * 1.4 + 0.2,
         a: Math.random() * 0.6 + 0.2,
         sp: Math.random() * 0.25 + 0.04,
@@ -348,7 +351,10 @@ function StarField() {
     }
     draw();
     window.addEventListener("resize", init);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", init); };
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", init);
+    };
   }, []);
   return <canvas ref={ref} style={{ position: "fixed", inset: 0, width: "100%", height: "100%", zIndex: 0, pointerEvents: "none" }} />;
 }
@@ -375,8 +381,7 @@ function RSCLSeal({ size = 130 }) {
   });
   const g = coreR * 0.38;
   return (
-    <svg width={size} height={size} viewBox={"0 0 " + size + " " + size}
-      style={{ display: "block", filter: "drop-shadow(0 0 14px rgba(0,200,255,0.4))" }}>
+    <svg width={size} height={size} viewBox={"0 0 " + size + " " + size} style={{ display: "block", filter: "drop-shadow(0 0 14px rgba(0,200,255,0.4))" }}>
       <defs>
         <radialGradient id="sg"><stop offset="0%" stopColor="#0a2a4a" /><stop offset="100%" stopColor="#020811" /></radialGradient>
         <radialGradient id="cg"><stop offset="0%" stopColor="#0d3560" /><stop offset="100%" stopColor="#041830" /></radialGradient>
@@ -400,8 +405,7 @@ function RSCLSeal({ size = 130 }) {
       ])}
       <circle cx={cx} cy={cy} r={g * 1.5} fill="none" stroke="rgba(0,200,255,0.15)" strokeWidth={0.8} strokeDasharray="2 3" />
       <circle cx={cx + g * 1.5 * Math.cos(-40 * Math.PI / 180)} cy={cy + g * 1.5 * Math.sin(-40 * Math.PI / 180)} r={2.5} fill="#00c8ff" opacity={0.85} />
-      <text x={cx} y={cy + coreR * 0.68} textAnchor="middle" dominantBaseline="middle"
-        style={{ fontSize: size * 0.108, fontFamily: "Georgia,serif", fill: "rgba(0,200,255,0.92)", fontWeight: 700, letterSpacing: 1 }}>
+      <text x={cx} y={cy + coreR * 0.68} textAnchor="middle" dominantBaseline="middle" style={{ fontSize: size * 0.108, fontFamily: "Georgia,serif", fill: "rgba(0,200,255,0.92)", fontWeight: 700, letterSpacing: 1 }}>
         RSCL@CPP
       </text>
       {[0, 90, 180, 270].map(a => {
@@ -414,41 +418,42 @@ function RSCLSeal({ size = 130 }) {
 
 // ── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function App() {
-  // target
-  const [tIdx, setTIdx]     = useState(0);
+  const [tIdx, setTIdx] = useState(0);
   const [manualMode, setManualMode] = useState(false);
-  const [mGal, setMGal]     = useState("Milky Way");
-  const [mSys, setMSys]     = useState("Solar System");
-  const [mPla, setMPla]     = useState("Mars");
-  const [mDist, setMDist]   = useState("12.5");
-  const [mUnit, setMUnit]   = useState("light-minutes");
+  const [mGal, setMGal] = useState("Milky Way");
+  const [mSys, setMSys] = useState("Solar System");
+  const [mPla, setMPla] = useState("Mars");
+  const [mDist, setMDist] = useState("12.5");
+  const [mUnit, setMUnit] = useState("light-minutes");
 
-  // event
-  const [ageEv, setAgeEv]   = useState("25");
-  const [lspan, setLspan]   = useState("80");
+  const [ageEv, setAgeEv] = useState("25");
+  const [lspan, setLspan] = useState("80");
   const [autoTime, setAutoTime] = useState(true);
-  const [evD, setEvD]       = useState("2026-01-01");
-  const [evT, setEvT]       = useState("00:00");
-  const [obsD, setObsD]     = useState(new Date().toISOString().slice(0, 10));
-  const [obsT, setObsT]     = useState(new Date().toISOString().slice(11, 16));
-  const [clipV, setClipV]   = useState("30");
-  const [clipU, setClipU]   = useState("seconds");
+  const [evD, setEvD] = useState("2026-01-01");
+  const [evT, setEvT] = useState("00:00");
+  const [obsD, setObsD] = useState(new Date().toISOString().slice(0, 10));
+  const [obsT, setObsT] = useState(new Date().toISOString().slice(11, 16));
+  const [clipV, setClipV] = useState("30");
+  const [clipU, setClipU] = useState("seconds");
 
-  // media
-  const [mediaURL, setMediaURL]   = useState(null);
+  const [mediaURL, setMediaURL] = useState(null);
   const [mediaType, setMediaType] = useState(null);
   const [mediaName, setMediaName] = useState("");
-  const [videoDur, setVideoDur]   = useState(0);
-  const fileRef  = useRef();
+  const [videoDur, setVideoDur] = useState(0);
+
+  const fileRef = useRef();
   const videoSrcRef = useRef();
   const videoRcvRef = useRef();
 
-  // playback
-  const [prog, setProg]     = useState(0);
+  const [prog, setProg] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [spd, setSpd]       = useState(1);
-  const playR = useRef(false), spdR = useRef(1), progR = useRef(0);
-  const rafR = useRef(), lastT = useRef(null);
+  const [spd, setSpd] = useState(1);
+
+  const playR = useRef(false);
+  const spdR = useRef(1);
+  const progR = useRef(0);
+  const rafR = useRef();
+  const lastT = useRef(null);
   const canvasRef = useRef();
 
   useEffect(() => { spdR.current = spd; }, [spd]);
@@ -498,34 +503,32 @@ export default function App() {
     : TARGETS[tIdx];
 
   const distanceLY = target._distanceLY != null ? target._distanceLY : target.distance_pc * PC_TO_LY;
-  const delaySec   = lyToSec(distanceLY);
+  const delaySec = lyToSec(distanceLY);
   const delayYears = delaySec / SPY;
 
   useEffect(() => { drawScene(canvasRef.current, prog, target); }, [prog, target]);
 
-  // dates
-  const obsDT    = new Date(obsD + "T" + (obsT || "00:00") + ":00Z");
-  const evDT     = autoTime ? addSec(obsDT, -delaySec) : new Date(evD + "T" + (evT || "00:00") + ":00Z");
+  const obsDT = new Date(obsD + "T" + (obsT || "00:00") + ":00Z");
+  const evDT = autoTime ? addSec(obsDT, -delaySec) : new Date(evD + "T" + (evT || "00:00") + ":00Z");
   const arrStart = addSec(evDT, delaySec);
-  const clipSec  = videoDur > 0 ? videoDur : (parseFloat(clipV) || 0) * ({ seconds: 1, minutes: 60, hours: 3600, days: 86400, years: SPY }[clipU] || 1);
-  const arrEnd   = addSec(arrStart, clipSec);
+  const clipSec = videoDur > 0 ? videoDur : (parseFloat(clipV) || 0) * ({ seconds: 1, minutes: 60, hours: 3600, days: 86400, years: SPY }[clipU] || 1);
+  const arrEnd = addSec(arrStart, clipSec);
 
-  // ── simulation state driven by button + slider ──
   const age0 = parseFloat(ageEv) || 0;
-  const ls   = parseFloat(lspan) || 80;
+  const ls = parseFloat(lspan) || 80;
 
-  const simProg      = Math.max(0, Math.min(1, prog));
+  const simProg = Math.max(0, Math.min(1, prog));
   const simTravelSec = delaySec * simProg;
-  const simDT        = addSec(evDT, simTravelSec);
+  const simDT = addSec(evDT, simTravelSec);
   const arrivedOnEarth = simProg >= 1;
 
-  const apparentAge      = arrivedOnEarth ? age0 : NaN;
-  const actualNow        = age0 + secToYr(simTravelSec);
-  const ageWhenSeen      = age0 + delayYears;
+  const apparentAge = arrivedOnEarth ? age0 : NaN;
+  const actualNow = age0 + secToYr(simTravelSec);
+  const ageWhenSeen = age0 + delayYears;
   const hiddenByDelayNow = actualNow - age0;
 
   const aliveWhenSeen = ageWhenSeen < ls;
-  const aliveNow      = actualNow < ls;
+  const aliveNow = actualNow < ls;
 
   let recS = "not_emitted";
   if (simProg > 0 && simProg < 1) recS = "traveling";
@@ -671,7 +674,6 @@ export default function App() {
 
       <div style={{ position: "relative", zIndex: 1, maxWidth: 900, margin: "0 auto", padding: "40px 20px 100px" }}>
 
-        {/* ── HEADER ── */}
         <div style={{ textAlign: "center", marginBottom: 40 }}>
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}><RSCLSeal size={140} /></div>
           <div style={{ fontSize: 13, letterSpacing: 5, color: dim, textTransform: "uppercase", marginBottom: 10 }}>
@@ -688,7 +690,6 @@ export default function App() {
           </p>
         </div>
 
-        {/* ── STEP 1: CHOOSE WORLD ── */}
         <div className="step">
           <StepLabel n="1" text="Choose Your World" />
 
@@ -746,7 +747,6 @@ export default function App() {
           )}
         </div>
 
-        {/* ── STEP 2: YOUR EVENT ── */}
         <div className="step">
           <StepLabel n="2" text="Your Event" />
 
@@ -820,7 +820,6 @@ export default function App() {
           )}
         </div>
 
-        {/* ── STEP 3: VISUALIZER ── */}
         <div style={{ background: "rgba(1,4,16,0.98)", border: "1px solid " + border, borderRadius: 18, overflow: "hidden", marginBottom: 20 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 24px", background: "rgba(0,15,45,0.9)", borderBottom: "1px solid " + border }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -871,7 +870,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* ── STEP 4: WHAT EARTH SEES ── */}
         <div className="step">
           <StepLabel n="4" text="What Earth Sees" />
 
@@ -928,9 +926,11 @@ export default function App() {
                   ) : (
                     <video ref={videoRcvRef} src={mediaURL} autoPlay loop style={{ width: "100%", borderRadius: 10, display: "block", border: "2px solid rgba(0,232,122,0.6)", boxShadow: "0 0 30px rgba(0,232,122,0.15)" }} />
                   )}
-                  <div style={{ marginTop: 10, padding: "10px 14px", background: "rgba(0,232,122,0.06)", borderRadius: 8, fontSize: 14, color: ok, textAlign: "center", fontWeight: 600 }}>
-                    ✓  Received on Earth in year {arrStart.getFullYear()}
-                    {distanceLY > 500 && " · Ancient signal — age filter applied"}
+                  <div style={{ marginTop: 10, padding: "10px 14px", background: "rgba(0,232,122,0.06)", borderRadius: 8, fontSize: 14, color: ok, textAlign: "center", fontWeight: 600, lineHeight: 1.7 }}>
+                    ✓ Earth receives it in <strong>{arrStart.getFullYear()}</strong>
+                    {" · "}It was emitted in <strong>{evDT.getFullYear()}</strong>
+                    {" · "}Light-travel time: <strong>{delayYears.toFixed(3)} years</strong>
+                    {distanceLY > 500 && " · Ancient signal"}
                   </div>
                 </>
               )}
@@ -938,7 +938,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* ── STEP 5: THE NUMBERS ── */}
         <div className="step fadein">
           <StepLabel n="5" text="The Numbers" />
 
@@ -967,7 +966,7 @@ export default function App() {
 
           <div className="g3" style={{ marginBottom: 16 }}>
             <InfoCard
-              label="Age when first seen on Earth"
+              label="Actual target age at first Earth reception"
               value={fmtAge(ageWhenSeen)}
               color={aliveWhenSeen ? ok : danger}
               sub={aliveWhenSeen ? "Still alive when Earth first receives the signal." : "Already beyond lifespan when Earth first receives the signal."}
@@ -982,16 +981,8 @@ export default function App() {
 
             <InfoCard
               label="Reception state"
-              value={
-                recS === "not_emitted" ? "Not emitted" :
-                recS === "traveling" ? "Traveling" :
-                "Arrived"
-              }
-              color={
-                recS === "arrived" ? ok :
-                recS === "traveling" ? accent :
-                dim
-              }
+              value={recS === "not_emitted" ? "Not emitted" : recS === "traveling" ? "Traveling" : "Arrived"}
+              color={recS === "arrived" ? ok : recS === "traveling" ? accent : dim}
               sub={
                 recS === "arrived"
                   ? "Earth can finally observe the signal."
@@ -1042,7 +1033,7 @@ export default function App() {
           <div style={{ marginTop: 14, fontSize: 16, color: dim, lineHeight: 2.2 }}>
             <strong style={{ color: bright }}>Kepler-452 b (~1,799 ly) · age 25:</strong> Earth sees 25 — they're actually about 1,824. Long dead.<br />
             <strong style={{ color: bright }}>TOI-1231 b (~90 ly) · age 25:</strong> Earth sees 25 — actually about 115. Likely dead.<br />
-            <strong style={{ color: bright }}>Proxima Cen b (~4.2 ly) · age 25:</strong> Earth sees 25 — actually about 29. Probably still alive.<br />
+            <strong style={{ color: bright }}>Proxima Cen b (~4.2 ly) · age 25:</strong> Earth sees 25 — actually about 29.2. Probably still alive.<br />
             <strong style={{ color: bright }}>Mars (Manual · ~12.5 light-minutes) · age 25:</strong> Delay is tiny — nearly real-time.
           </div>
         </details>
@@ -1058,8 +1049,15 @@ export default function App() {
           </div>
         </details>
 
-        <div style={{ textAlign: "center", marginTop: 50, fontSize: 13, color: "rgba(0,180,255,0.2)", letterSpacing: 2 }}>
-          RSCL@CPP · EARTH LOOKBACK SIMULATOR · distance / c = travel time · 1 pc = 3.26156 ly
+        <div style={{ textAlign: "center", marginTop: 50 }}>
+          <div style={{ fontSize: 13, color: "rgba(0,200,255,0.55)", marginBottom: 10, lineHeight: 1.8 }}>
+            Designed by <strong style={{ color: "rgba(255,255,255,0.9)" }}>Dr. Mohamed El-Hadedy</strong>,
+            Director of the <strong style={{ color: "rgba(0,200,255,0.9)" }}>Reconfigurable Space Computing Lab (RSCL)</strong>,
+            California State Polytechnic University, Pomona.
+          </div>
+          <div style={{ textAlign: "center", fontSize: 13, color: "rgba(0,180,255,0.2)", letterSpacing: 2 }}>
+            RSCL@CPP · EARTH LOOKBACK SIMULATOR · distance / c = travel time · 1 pc = 3.26156 ly
+          </div>
         </div>
       </div>
     </>
