@@ -1104,11 +1104,14 @@ export default function App() {
           </div>
         </div>
 
-        {/* QUICK EXAMPLES */}
-        <details style={{background:panel,border:"1px solid "+border,borderRadius:14,padding:"16px 22px",marginBottom:14}}>
-          <summary style={{fontFamily:"'Orbitron',sans-serif",fontSize:13,color:accent,letterSpacing:2}}>💡  QUICK EXAMPLES</summary>
-          <div style={{marginTop:16}}><QuickExamples/></div>
-        </details>
+        {/* PLANET EXPLORER — always open */}
+        <div style={{background:panel,border:"1px solid "+border,borderRadius:14,padding:"20px 22px",marginBottom:14}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+            <div style={{fontFamily:"'Orbitron',sans-serif",fontSize:13,color:accent,letterSpacing:2}}>🌍  PLANET EXPLORER</div>
+            <div style={{fontSize:12,color:dim}}>— click any planet to see its light-delay stats</div>
+          </div>
+          <PlanetExplorer/>
+        </div>
 
         {/* SCIENTIFIC ASSUMPTIONS */}
         <details style={{background:panel,border:"1px solid "+border,borderRadius:14,padding:"16px 22px",marginBottom:14}}>
