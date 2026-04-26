@@ -56,7 +56,7 @@ function drawScene(canvas, prog, target) {
   const p = Math.max(0, Math.min(1, prog));
   const distanceLY = target._distanceLY != null ? target._distanceLY : target.distance_pc * PC_TO_LY;
   const col = target.color || "#4fc3f7";
-  ctx.clearRect(0, 0, W, H);
+  ctx.clearRect(0,0,W,H);
   const bg = ctx.createLinearGradient(0,0,W,0);
   bg.addColorStop(0,"#010510"); bg.addColorStop(0.5,"#020c1e"); bg.addColorStop(1,"#010510");
   ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
@@ -162,37 +162,27 @@ function drawScene(canvas, prog, target) {
 // ── STARFIELD ────────────────────────────────────────────────────────────────
 function StarField() {
   const ref = useRef();
-  useEffect(() => {
-    const c = ref.current, ctx = c.getContext("2d");
-    let W, H, stars, raf;
-    function init() {
-      W = c.width = window.innerWidth; H = c.height = window.innerHeight;
-      stars = Array.from({ length: 280 }, () => ({
-        x: Math.random()*W, y: Math.random()*H,
-        r: Math.random()*1.4+0.2, a: Math.random()*0.6+0.2,
-        sp: Math.random()*0.25+0.04, ph: Math.random()*Math.PI*2
-      }));
+  useEffect(()=>{
+    const c=ref.current, ctx=c.getContext("2d");
+    let W,H,stars,raf;
+    function init(){
+      W=c.width=window.innerWidth; H=c.height=window.innerHeight;
+      stars=Array.from({length:280},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.4+0.2,a:Math.random()*0.6+0.2,sp:Math.random()*0.25+0.04,ph:Math.random()*Math.PI*2}));
     }
-    init();
-    let t = 0;
-    function draw() {
+    init(); let t=0;
+    function draw(){
       ctx.clearRect(0,0,W,H);
-      stars.forEach(s => {
-        const a = s.a*(0.5+0.5*Math.sin(t*s.sp+s.ph));
-        ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-        ctx.fillStyle="rgba(180,220,255,"+a+")"; ctx.fill();
-      });
+      stars.forEach(s=>{const a=s.a*(0.5+0.5*Math.sin(t*s.sp+s.ph)); ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fillStyle="rgba(180,220,255,"+a+")"; ctx.fill();});
       t+=0.01; raf=requestAnimationFrame(draw);
     }
-    draw();
-    window.addEventListener("resize",init);
-    return ()=>{ cancelAnimationFrame(raf); window.removeEventListener("resize",init); };
+    draw(); window.addEventListener("resize",init);
+    return ()=>{cancelAnimationFrame(raf); window.removeEventListener("resize",init);};
   },[]);
   return <canvas ref={ref} style={{position:"fixed",inset:0,width:"100%",height:"100%",zIndex:0,pointerEvents:"none"}}/>;
 }
 
 // ── RSCL SEAL ────────────────────────────────────────────────────────────────
-function RSCLSeal({ size = 200 }) {
+function RSCLSeal({size=200}) {
   return (
     <div style={{width:size,height:size*(560/680),display:"block",filter:"drop-shadow(0 0 18px rgba(0,200,255,0.5))"}}>
       <svg width={size} height={size*(560/680)} viewBox="0 0 680 560" xmlns="http://www.w3.org/2000/svg">
@@ -214,49 +204,26 @@ function RSCLSeal({ size = 200 }) {
             .rtw4{animation:rscltw 2.8s ease-in-out infinite 0.4s}
             .rtw5{animation:rscltw 3.6s ease-in-out infinite 1.8s}
           `}</style>
-          <radialGradient id="sv" cx="50%" cy="50%" r="52%">
-            <stop offset="0%" stopColor="#040d1e"/><stop offset="70%" stopColor="#010812"/><stop offset="100%" stopColor="#000408"/>
-          </radialGradient>
-          <radialGradient id="sn1" cx="38%" cy="42%" r="55%">
-            <stop offset="0%" stopColor="#0a1a4a" stopOpacity="0.9"/><stop offset="100%" stopColor="#0a1a4a" stopOpacity="0"/>
-          </radialGradient>
-          <radialGradient id="sn2" cx="65%" cy="60%" r="48%">
-            <stop offset="0%" stopColor="#0d0a30" stopOpacity="0.7"/><stop offset="100%" stopColor="#0d0a30" stopOpacity="0"/>
-          </radialGradient>
-          <radialGradient id="ssg" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#ffffff"/><stop offset="25%" stopColor="#ffe680"/>
-            <stop offset="65%" stopColor="#ff9a20" stopOpacity="0.35"/><stop offset="100%" stopColor="#ff6000" stopOpacity="0"/>
-          </radialGradient>
-          <radialGradient id="seg" cx="36%" cy="33%" r="65%">
-            <stop offset="0%" stopColor="#4ab8ff"/><stop offset="35%" stopColor="#1560b0"/>
-            <stop offset="72%" stopColor="#0b3870"/><stop offset="100%" stopColor="#041428"/>
-          </radialGradient>
-          <radialGradient id="sat" cx="50%" cy="50%" r="50%">
-            <stop offset="74%" stopColor="#4fc3f7" stopOpacity="0"/><stop offset="100%" stopColor="#4fc3f7" stopOpacity="0.38"/>
-          </radialGradient>
-          <radialGradient id="scg" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#00eeff" stopOpacity="0.2"/><stop offset="100%" stopColor="#00eeff" stopOpacity="0"/>
-          </radialGradient>
+          <radialGradient id="sv" cx="50%" cy="50%" r="52%"><stop offset="0%" stopColor="#040d1e"/><stop offset="70%" stopColor="#010812"/><stop offset="100%" stopColor="#000408"/></radialGradient>
+          <radialGradient id="sn1" cx="38%" cy="42%" r="55%"><stop offset="0%" stopColor="#0a1a4a" stopOpacity="0.9"/><stop offset="100%" stopColor="#0a1a4a" stopOpacity="0"/></radialGradient>
+          <radialGradient id="sn2" cx="65%" cy="60%" r="48%"><stop offset="0%" stopColor="#0d0a30" stopOpacity="0.7"/><stop offset="100%" stopColor="#0d0a30" stopOpacity="0"/></radialGradient>
+          <radialGradient id="ssg" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#ffffff"/><stop offset="25%" stopColor="#ffe680"/><stop offset="65%" stopColor="#ff9a20" stopOpacity="0.35"/><stop offset="100%" stopColor="#ff6000" stopOpacity="0"/></radialGradient>
+          <radialGradient id="seg" cx="36%" cy="33%" r="65%"><stop offset="0%" stopColor="#4ab8ff"/><stop offset="35%" stopColor="#1560b0"/><stop offset="72%" stopColor="#0b3870"/><stop offset="100%" stopColor="#041428"/></radialGradient>
+          <radialGradient id="sat" cx="50%" cy="50%" r="50%"><stop offset="74%" stopColor="#4fc3f7" stopOpacity="0"/><stop offset="100%" stopColor="#4fc3f7" stopOpacity="0.38"/></radialGradient>
+          <radialGradient id="scg" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#00eeff" stopOpacity="0.2"/><stop offset="100%" stopColor="#00eeff" stopOpacity="0"/></radialGradient>
           <clipPath id="sec"><circle cx="430" cy="230" r="40"/></clipPath>
           <clipPath id="ssc"><circle cx="340" cy="240" r="228"/></clipPath>
-          <filter id="sfg">
-            <feGaussianBlur stdDeviation="3.5" result="b"/>
-            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
+          <filter id="sfg"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         </defs>
         <circle cx="340" cy="240" r="240" fill="#020915" stroke="#00c8ff" strokeWidth="2.8" strokeOpacity="0.55"/>
         <circle cx="340" cy="240" r="237" fill="none" stroke="#00c8ff" strokeWidth="0.6" strokeOpacity="0.18"/>
         <g stroke="#00c8ff" strokeWidth="1.8" strokeOpacity="0.6">
-          <line x1="340" y1="2"   x2="340" y2="20"/>
-          <line x1="340" y1="460" x2="340" y2="478"/>
-          <line x1="100" y1="240" x2="118" y2="240"/>
-          <line x1="562" y1="240" x2="580" y2="240"/>
-          <line x1="170" y1="70"  x2="182" y2="90"/>
-          <line x1="498" y1="390" x2="510" y2="410"/>
-          <line x1="510" y1="70"  x2="498" y2="90"/>
-          <line x1="182" y1="390" x2="170" y2="410"/>
+          <line x1="340" y1="2" x2="340" y2="20"/><line x1="340" y1="460" x2="340" y2="478"/>
+          <line x1="100" y1="240" x2="118" y2="240"/><line x1="562" y1="240" x2="580" y2="240"/>
+          <line x1="170" y1="70" x2="182" y2="90"/><line x1="498" y1="390" x2="510" y2="410"/>
+          <line x1="510" y1="70" x2="498" y2="90"/><line x1="182" y1="390" x2="170" y2="410"/>
         </g>
-        <polygon points="340,3 346,12 340,21 334,12"      fill="#00c8ff" opacity="0.95"/>
+        <polygon points="340,3 346,12 340,21 334,12" fill="#00c8ff" opacity="0.95"/>
         <polygon points="340,459 346,468 340,477 334,468" fill="#00c8ff" opacity="0.95"/>
         <polygon points="100,240 109,234 118,240 109,246" fill="#00c8ff" opacity="0.95"/>
         <polygon points="562,240 571,234 580,240 571,246" fill="#00c8ff" opacity="0.95"/>
@@ -264,25 +231,17 @@ function RSCLSeal({ size = 200 }) {
           <circle cx="340" cy="240" r="228" fill="url(#sv)"/>
           <circle cx="295" cy="200" r="130" fill="url(#sn1)"/>
           <circle cx="410" cy="275" r="105" fill="url(#sn2)"/>
-          <circle className="rtw1" cx="248" cy="148" r="1.6" fill="#c8e8ff" opacity="0.85"/>
-          <circle className="rtw2" cx="285" cy="128" r="1.1" fill="#e0f4ff" opacity="0.65"/>
-          <circle className="rtw3" cx="432" cy="138" r="1.7" fill="#c8e8ff" opacity="0.75"/>
-          <circle className="rtw4" cx="462" cy="172" r="1.0" fill="#e0f4ff" opacity="0.55"/>
-          <circle className="rtw5" cx="232" cy="228" r="1.3" fill="#c8e8ff" opacity="0.65"/>
-          <circle className="rtw1" cx="464" cy="268" r="1.4" fill="#c8e8ff" opacity="0.70"/>
-          <circle className="rtw2" cx="262" cy="298" r="1.0" fill="#e0f4ff" opacity="0.45"/>
-          <circle className="rtw3" cx="445" cy="315" r="1.2" fill="#c8e8ff" opacity="0.55"/>
-          <circle className="rtw4" cx="298" cy="332" r="1.0" fill="#e0f4ff" opacity="0.50"/>
-          <circle className="rtw5" cx="376" cy="142" r="1.5" fill="#c8e8ff" opacity="0.65"/>
-          <circle className="rtw1" cx="210" cy="268" r="1.2" fill="#c8e8ff" opacity="0.55"/>
-          <circle className="rtw3" cx="325" cy="352" r="1.3" fill="#c8e8ff" opacity="0.60"/>
-          <circle className="rtw5" cx="215" cy="190" r="1.4" fill="#c8e8ff" opacity="0.65"/>
+          {[["rtw1",248,148,1.6],["rtw2",285,128,1.1],["rtw3",432,138,1.7],["rtw4",462,172,1.0],["rtw5",232,228,1.3],
+            ["rtw1",464,268,1.4],["rtw2",262,298,1.0],["rtw3",445,315,1.2],["rtw4",298,332,1.0],["rtw5",376,142,1.5],
+            ["rtw1",210,268,1.2],["rtw3",325,352,1.3],["rtw5",215,190,1.4]].map(([cls,x,y,r],i)=>(
+            <circle key={i} className={cls} cx={x} cy={y} r={r} fill="#c8e8ff" opacity="0.7"/>
+          ))}
         </g>
         <g className="rr1">
           <circle cx="340" cy="240" r="215" fill="none" stroke="#00c8ff" strokeWidth="1" strokeOpacity="0.18" strokeDasharray="2 7"/>
           <circle cx="340" cy="240" r="206" fill="none" stroke="#00c8ff" strokeWidth="0.6" strokeOpacity="0.12" strokeDasharray="1 9"/>
           <g stroke="#00c8ff" strokeOpacity="0.55">
-            <line x1="340" y1="27"  x2="340" y2="42"  strokeWidth="2.2"/>
+            <line x1="340" y1="27" x2="340" y2="42" strokeWidth="2.2"/>
             <line x1="340" y1="438" x2="340" y2="453" strokeWidth="2.2"/>
             <line x1="127" y1="240" x2="142" y2="240" strokeWidth="2.2"/>
             <line x1="538" y1="240" x2="553" y2="240" strokeWidth="2.2"/>
@@ -318,14 +277,14 @@ function RSCLSeal({ size = 200 }) {
         <text x="238" y="276" textAnchor="middle" fontFamily="'Orbitron',monospace" fontSize="11" fill="#ffd060" letterSpacing="2" opacity="0.9">SOURCE</text>
         <line x1="256" y1="228" x2="388" y2="230" className="rbm" stroke="#00eeff" strokeWidth="2.2" strokeLinecap="round"/>
         <circle cx="322" cy="229" r="5.5" fill="#ffffff" opacity="0.95" filter="url(#sfg)"/>
-        <circle cx="322" cy="229" r="11"  fill="#00eeff" opacity="0.22"/>
+        <circle cx="322" cy="229" r="11" fill="#00eeff" opacity="0.22"/>
         <text x="322" y="214" textAnchor="middle" fontFamily="'Orbitron',monospace" fontSize="9" fill="#00c8ff" letterSpacing="2" opacity="0.6">d / c = t</text>
         <circle cx="430" cy="230" r="42" fill="url(#seg)"/>
         <g clipPath="url(#sec)" opacity="0.85">
           <ellipse cx="417" cy="218" rx="12" ry="7.5" fill="#2d8a48" transform="rotate(-20,417,218)"/>
           <ellipse cx="436" cy="235" rx="14" ry="6.5" fill="#2d8a48" transform="rotate(15,436,235)"/>
-          <ellipse cx="413" cy="242" rx="8"  ry="5"   fill="#2d8a48" transform="rotate(-5,413,242)"/>
-          <ellipse cx="445" cy="218" rx="7"  ry="4"   fill="#2d8a48" transform="rotate(25,445,218)"/>
+          <ellipse cx="413" cy="242" rx="8" ry="5" fill="#2d8a48" transform="rotate(-5,413,242)"/>
+          <ellipse cx="445" cy="218" rx="7" ry="4" fill="#2d8a48" transform="rotate(25,445,218)"/>
         </g>
         <circle cx="430" cy="230" r="42" fill="url(#sat)"/>
         <circle cx="430" cy="230" r="47" fill="none" stroke="#4fc3f7" strokeWidth="3" strokeOpacity="0.22"/>
@@ -339,147 +298,219 @@ function RSCLSeal({ size = 200 }) {
   );
 }
 
-// ── SCIENTIFIC ASSUMPTIONS PANEL ─────────────────────────────────────────────
+// ── QUICK EXAMPLES ───────────────────────────────────────────────────────────
+const EXAMPLES = [
+  {
+    planet:"Kepler-452 b", system:"Kepler-452 · Milky Way", dist:"~1,799 ly",
+    color:"#ffcc80", ageEvent:25, lifespan:80, delay:1799, isLocal:false,
+    interp:"By the time Earth receives the signal, the person would be ~1,824 years old — vastly beyond any human lifespan. The civilization that sent this signal may no longer exist. Earth is looking nearly 18 centuries into the past."
+  },
+  {
+    planet:"TOI-1231 b", system:"TOI-1231 · Milky Way", dist:"~90 ly",
+    color:"#ce93d8", ageEvent:25, lifespan:80, delay:90, isLocal:false,
+    interp:"At 90 light-years, Earth receives the signal when the person would be ~115 years old — just past a realistic human lifespan. They likely did not survive to see Earth's response. A 180-year round-trip makes any real conversation impossible."
+  },
+  {
+    planet:"Proxima Cen b", system:"Proxima Centauri · Milky Way", dist:"~4.2 ly",
+    color:"#fff176", ageEvent:25, lifespan:80, delay:4.2, isLocal:false,
+    interp:"Our nearest stellar neighbor. Earth receives the signal when the person is ~29.2 years old — well within a human lifespan. A two-way exchange would take ~8.4 years per round trip. The most realistic target for long-distance communication."
+  },
+  {
+    planet:"Mars", system:"Solar System · Manual entry", dist:"~12.5 light-min",
+    color:"#ef9a9a", ageEvent:25, lifespan:80, delay:0.0208, isLocal:true,
+    interp:"At ~12.5 light-minutes, the delay is imperceptible at human timescales — the person is still effectively 25. Real-time video calls are impossible (25-min round trip), but the aging effect is negligible."
+  },
+];
+
+function statusInfo(e) {
+  const actual = e.ageEvent + e.delay;
+  if (e.isLocal)            return { label:"Near real-time", bg:"rgba(0,200,255,0.12)", col:"#00c8ff" };
+  if (actual < e.lifespan)  return { label:"Likely alive",   bg:"rgba(0,232,122,0.12)", col:"#00e87a" };
+  if (actual < e.lifespan+20) return { label:"Borderline",   bg:"rgba(245,200,66,0.12)",col:"#f5c842" };
+  return                           { label:"Long dead",       bg:"rgba(255,95,95,0.12)", col:"#ff5f5f" };
+}
+
+function QuickExamples() {
+  const [selected, setSelected] = useState(null);
+  const border  = "rgba(0,180,255,0.22)";
+  const dim     = "#6a8aaa";
+  const textCol = "#c8dff0";
+  const accent  = "#00c8ff";
+  const panel   = "rgba(4,18,38,0.96)";
+
+  const MetricTile = ({label, value, color}) => (
+    <div style={{background:"rgba(0,0,0,0.3)",borderRadius:8,padding:"12px 14px",border:"1px solid "+border}}>
+      <div style={{fontSize:11,color:dim,textTransform:"uppercase",letterSpacing:1.5,marginBottom:4}}>{label}</div>
+      <div style={{fontSize:18,fontWeight:700,color:color||textCol,fontFamily:"'IBM Plex Mono',monospace"}}>{value}</div>
+    </div>
+  );
+
+  return (
+    <div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(175px,1fr))",gap:10,marginBottom:selected!==null?16:0}}>
+        {EXAMPLES.map((e,i)=>{
+          const st = statusInfo(e);
+          const actual = e.ageEvent + e.delay;
+          const pct = e.isLocal ? 100 : Math.min((e.ageEvent/actual)*100, 100);
+          return (
+            <div key={i} onClick={()=>setSelected(selected===i?null:i)}
+              style={{padding:"14px 16px",borderRadius:12,border:selected===i?"2px solid "+accent:"1px solid "+border,background:selected===i?"rgba(0,200,255,0.07)":panel,cursor:"pointer",transition:"all 0.15s"}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+                <div style={{width:11,height:11,borderRadius:"50%",background:e.color,boxShadow:"0 0 6px "+e.color,flexShrink:0}}/>
+                <div style={{fontSize:13,fontWeight:700,color:textCol,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.planet}</div>
+              </div>
+              <div style={{fontSize:12,color:dim,marginBottom:10}}>{e.dist}</div>
+              <div style={{height:5,borderRadius:3,background:"rgba(0,180,255,0.15)",overflow:"hidden",marginBottom:6}}>
+                <div style={{height:"100%",width:pct.toFixed(1)+"%",background:st.col,borderRadius:3}}/>
+              </div>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:dim,marginBottom:10}}>
+                <span>age 25</span>
+                <span>{e.isLocal?"~25":actual.toFixed(1)} yrs</span>
+              </div>
+              <span style={{fontSize:11,padding:"3px 10px",borderRadius:99,fontWeight:600,background:st.bg,color:st.col}}>{st.label}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      {selected !== null && (()=>{
+        const e = EXAMPLES[selected];
+        const st = statusInfo(e);
+        const actual = e.ageEvent + e.delay;
+        const pct = e.isLocal ? 100 : Math.min((e.ageEvent/actual)*100+3, 100);
+        return (
+          <div style={{border:"1px solid "+border,borderRadius:12,padding:"20px 22px",background:"rgba(0,8,24,0.95)"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:8}}>
+              <div>
+                <div style={{fontSize:17,fontWeight:700,color:e.color,fontFamily:"'Orbitron',sans-serif"}}>{e.planet}</div>
+                <div style={{fontSize:13,color:dim,marginTop:2}}>{e.system}</div>
+              </div>
+              <span style={{fontSize:12,padding:"4px 12px",borderRadius:99,fontWeight:600,background:st.bg,color:st.col}}>{st.label}</span>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:10,marginBottom:16}}>
+              <MetricTile label="Distance"     value={e.dist}                               color={textCol}/>
+              <MetricTile label="Earth sees"   value="age 25"                               color={accent}/>
+              <MetricTile label="Actual age"   value={e.isLocal?"~25 yrs":actual.toFixed(1)+" yrs"} color={st.col}/>
+              <MetricTile label="Hidden delay" value={e.isLocal?"< 1 min":e.delay.toFixed(1)+" yrs"} color={accent}/>
+            </div>
+            <div style={{marginBottom:6}}>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:dim,marginBottom:5}}>
+                <span>Age at event — 25 yrs</span>
+                <span>Actual age — {e.isLocal?"~25":actual.toFixed(1)} yrs</span>
+              </div>
+              <div style={{height:8,borderRadius:4,background:"rgba(0,180,255,0.15)",overflow:"hidden",marginBottom:4}}>
+                <div style={{height:"100%",width:pct.toFixed(1)+"%",background:st.col,borderRadius:4}}/>
+              </div>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:dim}}>
+                <span>emitted</span>
+                <span>Earth receives</span>
+              </div>
+            </div>
+            <div style={{marginTop:14,padding:"14px 16px",borderRadius:8,background:"rgba(0,200,255,0.05)",borderLeft:"3px solid "+accent,fontSize:14,color:dim,lineHeight:1.8,borderRadius:0}}>
+              {e.interp}
+            </div>
+          </div>
+        );
+      })()}
+    </div>
+  );
+}
+
+// ── SCIENTIFIC ASSUMPTIONS ───────────────────────────────────────────────────
 function ScientificAssumptions() {
   const [openCards, setOpenCards] = useState({});
-  const [allOpen, setAllOpen] = useState(false);
-
-  const toggle = (id) => setOpenCards(prev => ({ ...prev, [id]: !prev[id] }));
+  const [allOpen, setAllOpen]     = useState(false);
+  const toggle    = id => setOpenCards(prev=>({...prev,[id]:!prev[id]}));
   const toggleAll = () => {
-    const next = !allOpen;
-    setAllOpen(next);
-    const state = {};
-    assumptions.forEach((_, i) => { state[i] = next; });
-    setOpenCards(state);
+    const next=!allOpen; setAllOpen(next);
+    const s={}; assumptions.forEach((_,i)=>{s[i]=next;}); setOpenCards(s);
   };
-
-  const tagStyle = (type) => {
-    if (type === "valid")  return { background:"rgba(0,232,122,0.12)", color:"#00e87a", border:"1px solid rgba(0,232,122,0.3)" };
-    if (type === "limit")  return { background:"rgba(245,200,66,0.12)", color:"#f5c842", border:"1px solid rgba(245,200,66,0.3)" };
-    if (type === "future") return { background:"rgba(147,112,219,0.12)", color:"#b39ddb", border:"1px solid rgba(147,112,219,0.3)" };
+  const tagStyle = k => {
+    if(k==="valid")  return {background:"rgba(0,232,122,0.12)",color:"#00e87a",border:"1px solid rgba(0,232,122,0.3)"};
+    if(k==="limit")  return {background:"rgba(245,200,66,0.12)",color:"#f5c842",border:"1px solid rgba(245,200,66,0.3)"};
+    if(k==="future") return {background:"rgba(147,112,219,0.12)",color:"#b39ddb",border:"1px solid rgba(147,112,219,0.3)"};
     return {};
   };
-
+  const accent="00c8ff",border="rgba(0,180,255,0.22)",dim="#6a8aaa",textCol="#c8dff0";
   const assumptions = [
-    {
-      section: "I — Geometry & Propagation",
-      id:"A1", color:"#0C447C", bg:"rgba(0,120,255,0.12)",
-      title:"Rectilinear photon propagation in flat spacetime",
-      sub:"Light travels in a straight line at exactly c between source and observer",
-      tags:[{t:"Valid in this model",k:"valid"}],
-      body:`Light is modeled as a point signal traveling at the invariant speed of light in vacuum:`,
+    { section:"I — Geometry & Propagation", id:"A1", color:"#0C447C", bg:"rgba(0,120,255,0.12)",
+      title:"Rectilinear photon propagation in flat spacetime", sub:"Light travels in a straight line at exactly c between source and observer",
+      tags:[{t:"Valid in this model",k:"valid"}], body:"Light is modeled as a point signal traveling at the invariant speed of light in vacuum:",
       formula:"c = 299,792,458 m/s  =  1 ly/yr  (natural units)",
-      detail:"The propagation path is assumed perfectly straight — no gravitational lensing, no refraction. Valid for stellar distances where spacetime curvature from intervening masses is negligible."
-    },
-    {
-      id:"A2", color:"#0C447C", bg:"rgba(0,120,255,0.12)",
-      title:"Light-travel time equals distance divided by c",
-      sub:"When d is in light-years, t_travel numerically equals d in years",
-      tags:[{t:"Valid in this model",k:"valid"}],
-      body:"The fundamental relation driving all temporal calculations in the simulator:",
+      detail:"The propagation path is assumed perfectly straight — no gravitational lensing, no refraction. Valid for stellar distances where spacetime curvature from intervening masses is negligible." },
+    { id:"A2", color:"#0C447C", bg:"rgba(0,120,255,0.12)",
+      title:"Light-travel time equals distance divided by c", sub:"When d is in light-years, t_travel numerically equals d in years",
+      tags:[{t:"Valid in this model",k:"valid"}], body:"The fundamental relation driving all temporal calculations in the simulator:",
       formula:"t_travel = d / c   ⟹   t_travel [yr] = d [ly]",
-      detail:"This identity holds exactly in natural units and is the core of every age-delay computation shown in Step 5."
-    },
-    {
-      id:"A3", color:"#0C447C", bg:"rgba(0,120,255,0.12)",
-      title:"Point-source signal model",
-      sub:"Every pixel in the uploaded media shares a single travel time",
-      tags:[{t:"Valid in this model",k:"valid"}],
-      body:"The uploaded image or video is treated as originating from a single point in space at catalog distance d. All photons in the frame are assigned identical delay:",
+      detail:"This identity holds exactly in natural units and is the core of every age-delay computation shown in Step 5." },
+    { id:"A3", color:"#0C447C", bg:"rgba(0,120,255,0.12)",
+      title:"Point-source signal model", sub:"Every pixel in the uploaded media shares a single travel time",
+      tags:[{t:"Valid in this model",k:"valid"}], body:"The uploaded image or video is treated as originating from a single point at catalog distance d. All photons share identical delay:",
       formula:"Δt_pixel = 0   (all pixels co-emitted)",
-      detail:"A physically extended source (e.g. a planet 12,000 km across at 4.2 ly) would introduce sub-nanosecond differential delays — negligible at any human-relevant timescale."
-    },
-    {
-      id:"A4", color:"#0C447C", bg:"rgba(0,120,255,0.12)",
-      title:"Static source-observer distance",
-      sub:"Catalog distance d is treated as fixed throughout the simulation",
+      detail:"A physically extended source (e.g. a planet 12,000 km across at 4.2 ly) would introduce sub-nanosecond differential delays — negligible at any human-relevant timescale." },
+    { id:"A4", color:"#0C447C", bg:"rgba(0,120,255,0.12)",
+      title:"Static source-observer distance", sub:"Catalog distance d is treated as fixed throughout the simulation",
       tags:[{t:"Valid in this model",k:"valid"},{t:"Limitation for nearby fast movers",k:"limit"}],
       body:"The host-system parallax distance is used as a constant. In reality proper motion changes d over time:",
       formula:"d(t) = d₀ + v_r · t   ⟹   t_travel = ∫ dd / c",
-      detail:"For Proxima Centauri (v_r ≈ −22 km/s), the distance changes by ~0.02 ly per century — negligible for human timescales but non-trivial over millennia."
-    },
-    {
-      section: "II — Temporal & Relativistic",
-      id:"A5", color:"#f5c842", bg:"rgba(245,200,66,0.10)",
-      title:"No special relativistic time dilation",
-      sub:"Lorentz factor γ = 1 assumed throughout",
+      detail:"For Proxima Centauri (v_r ≈ −22 km/s), the distance changes by ~0.02 ly per century — negligible for human timescales but non-trivial over millennia." },
+    { section:"II — Temporal & Relativistic", id:"A5", color:"#f5c842", bg:"rgba(245,200,66,0.10)",
+      title:"No special relativistic time dilation", sub:"Lorentz factor γ = 1 assumed throughout",
       tags:[{t:"Limitation",k:"limit"},{t:"Future: add v/c slider",k:"future"}],
       body:"Special relativity predicts that a moving source experiences dilated proper time relative to the observer frame:",
       formula:"t_proper = t_coord · √(1 − v²/c²)   where γ = 1/√(1 − v²/c²)",
-      detail:"This model sets v_source = 0 and γ = 1. For exoplanets orbiting at typical stellar velocities (v ≲ 30 km/s ≈ 10⁻⁴c), the fractional dilation is of order 10⁻⁸ — fully negligible for educational purposes."
-    },
-    {
-      id:"A6", color:"#f5c842", bg:"rgba(245,200,66,0.10)",
-      title:"No gravitational time dilation",
-      sub:"General relativistic corrections to clock rates are omitted",
+      detail:"This model sets v_source = 0 and γ = 1. For exoplanets at typical stellar velocities (v ≲ 30 km/s ≈ 10⁻⁴c), the fractional dilation is ~10⁻⁸ — fully negligible for educational purposes." },
+    { id:"A6", color:"#f5c842", bg:"rgba(245,200,66,0.10)",
+      title:"No gravitational time dilation", sub:"General relativistic corrections to clock rates are omitted",
       tags:[{t:"Limitation",k:"limit"}],
       body:"General relativity predicts that clocks run slower deeper in a gravitational potential well (Schwarzschild metric):",
       formula:"t_surface = t_∞ · √(1 − 2GM / rc²)",
-      detail:"For an Earth-mass planet orbiting a Sun-like star, the fractional correction is ~10⁻⁹ per year — negligible here. Would become significant for observations near neutron stars or black holes."
-    },
-    {
-      id:"A7", color:"#f5c842", bg:"rgba(245,200,66,0.10)",
-      title:"No cosmological redshift or expansion",
-      sub:"Hubble flow is not modeled — all targets are within the Milky Way",
+      detail:"For an Earth-mass planet orbiting a Sun-like star, the fractional correction is ~10⁻⁹ per year — negligible here. Significant near neutron stars or black holes." },
+    { id:"A7", color:"#f5c842", bg:"rgba(245,200,66,0.10)",
+      title:"No cosmological redshift or expansion", sub:"Hubble flow is not modeled — all targets are within the Milky Way",
       tags:[{t:"Limitation for extragalactic use",k:"limit"}],
       body:"At cosmological distances the expansion of space stretches photon wavelengths and increases effective light-travel time beyond d/c:",
       formula:"z = (λ_obs − λ_emit) / λ_emit   ⟹   1 + z = a(t_obs) / a(t_emit)",
-      detail:"All current catalog targets are within the Milky Way (d ≲ 600 ly), where Hubble flow contributes less than 1 part in 10⁶ to the delay. The non-expanding flat-space model is exact at these scales."
-    },
-    {
-      section: "III — Spectral & Kinematic Effects",
-      id:"A8", color:"#b39ddb", bg:"rgba(147,112,219,0.10)",
-      title:"Doppler shift not modeled",
-      sub:"Radial velocity of the source does not alter the received signal frequency",
+      detail:"All catalog targets are within the Milky Way (d ≲ 600 ly), where Hubble flow contributes less than 1 part in 10⁶. The non-expanding flat-space model is exact at these scales." },
+    { section:"III — Spectral & Kinematic Effects", id:"A8", color:"#b39ddb", bg:"rgba(147,112,219,0.10)",
+      title:"Doppler shift not modeled", sub:"Radial velocity of the source does not alter the received signal frequency",
       tags:[{t:"Future work",k:"future"}],
       body:"A source moving radially toward or away from Earth shifts the received frequency:",
       formula:"f_obs = f_emit · √((1 + β)/(1 − β))   where β = v_r / c",
-      detail:"For Proxima Centauri (v_r ≈ −22 km/s, β ≈ 7×10⁻⁵), the blueshift is ~0.007% — imperceptible to the eye but detectable spectroscopically. A future version could apply a color-temperature shift to the received image."
-    },
-    {
-      id:"A9", color:"#b39ddb", bg:"rgba(147,112,219,0.10)",
-      title:"Stellar aberration not modeled",
-      sub:"Earth's orbital velocity does not shift the apparent sky position of the source",
+      detail:"For Proxima Centauri (v_r ≈ −22 km/s, β ≈ 7×10⁻⁵), the blueshift is ~0.007% — imperceptible to the eye but detectable spectroscopically. A future version could apply a color-temperature shift to the received image." },
+    { id:"A9", color:"#b39ddb", bg:"rgba(147,112,219,0.10)",
+      title:"Stellar aberration not modeled", sub:"Earth's orbital velocity does not shift the apparent sky position of the source",
       tags:[{t:"Future work",k:"future"}],
       body:"Due to Earth's orbital velocity (v_⊕ ≈ 29.8 km/s), the apparent direction of incoming light is displaced from the true direction by the aberration angle:",
       formula:"tan(θ_aber) = v_⊕ sin(θ) / (c + v_⊕ cos(θ))   ≈ 20.5″ maximum",
-      detail:"The maximum displacement of ~20.5 arcseconds was historically used to first measure the speed of light (Bradley, 1729). The simulator treats all source positions as fixed on the celestial sphere."
-    },
-    {
-      id:"A10", color:"#b39ddb", bg:"rgba(147,112,219,0.10)",
-      title:"Interstellar medium dispersion not modeled",
-      sub:"The ISM is treated as a perfect vacuum — no frequency-dependent delay",
+      detail:"The maximum displacement of ~20.5 arcseconds was historically used to first measure the speed of light (Bradley, 1729). All source positions are treated as fixed on the celestial sphere." },
+    { id:"A10", color:"#b39ddb", bg:"rgba(147,112,219,0.10)",
+      title:"Interstellar medium dispersion not modeled", sub:"The ISM is treated as a perfect vacuum — no frequency-dependent delay",
       tags:[{t:"Future work",k:"future"}],
-      body:"The interstellar medium has a non-zero electron column density (dispersion measure, DM) that causes lower-frequency photons to arrive later:",
+      body:"The interstellar medium has a non-zero electron column density (dispersion measure, DM) causing lower-frequency photons to arrive later:",
       formula:"Δt_DM = 4.15 ms · DM · (f_low⁻² − f_high⁻²)   [DM in pc/cm³, f in GHz]",
-      detail:"For optical photons this effect is utterly negligible. It is significant for radio pulsar timing and fast radio bursts. Optical imaging as used here is unaffected."
-    },
+      detail:"For optical photons this effect is utterly negligible. It is significant for radio pulsar timing and fast radio bursts. Optical imaging as used here is unaffected." },
   ];
 
-  const accent="#00c8ff", border="rgba(0,180,255,0.22)", dim="#6a8aaa", textCol="#c8dff0";
-
-  let sectionSeen = {};
+  let seenSections = {};
   return (
     <div>
-      {/* legend + toggle */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,flexWrap:"wrap",gap:8}}>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           {[["Valid in this model","valid"],["Limitation","limit"],["Future work","future"]].map(([t,k])=>(
             <span key={k} style={{fontSize:11,padding:"3px 10px",borderRadius:4,fontWeight:600,letterSpacing:1,...tagStyle(k)}}>{t}</span>
           ))}
         </div>
-        <button onClick={toggleAll} style={{fontSize:13,color:accent,background:"none",border:"1px solid rgba(0,200,255,0.3)",borderRadius:6,cursor:"pointer",padding:"4px 14px"}}>
+        <button onClick={toggleAll} style={{fontSize:13,color:"#00c8ff",background:"none",border:"1px solid rgba(0,200,255,0.3)",borderRadius:6,cursor:"pointer",padding:"4px 14px"}}>
           {allOpen?"Collapse all":"Expand all"}
         </button>
       </div>
-
-      {assumptions.map((a, i) => (
+      {assumptions.map((a,i)=>(
         <div key={i}>
-          {a.section && !sectionSeen[a.section] && (()=>{sectionSeen[a.section]=true; return (
+          {a.section && !seenSections[a.section] && (seenSections[a.section]=true) && (
             <div style={{fontSize:11,fontWeight:600,letterSpacing:"2.5px",textTransform:"uppercase",color:dim,margin:"18px 0 8px"}}>{a.section}</div>
-          );})()}
+          )}
           <div style={{border:"1px solid "+border,borderRadius:12,overflow:"hidden",marginBottom:8,background:"rgba(4,18,38,0.96)"}}>
-            {/* header */}
             <div onClick={()=>toggle(i)} style={{display:"flex",alignItems:"flex-start",gap:14,padding:"14px 18px",cursor:"pointer",background:openCards[i]?"rgba(0,180,255,0.06)":"transparent"}}>
               <div style={{width:32,height:32,borderRadius:"50%",background:a.bg,border:"1px solid "+a.color+"55",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:a.color,flexShrink:0,marginTop:2,fontFamily:"monospace"}}>{a.id}</div>
               <div style={{flex:1}}>
@@ -488,8 +519,7 @@ function ScientificAssumptions() {
               </div>
               <div style={{color:dim,fontSize:14,marginTop:6,flexShrink:0,transition:"transform 0.2s",transform:openCards[i]?"rotate(180deg)":"none"}}>▾</div>
             </div>
-            {/* body */}
-            {openCards[i] && (
+            {openCards[i]&&(
               <div style={{padding:"14px 18px 16px 64px",borderTop:"1px solid "+border,fontSize:14,color:dim,lineHeight:1.8}}>
                 <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
                   {a.tags.map((tag,ti)=>(
@@ -504,8 +534,6 @@ function ScientificAssumptions() {
           </div>
         </div>
       ))}
-
-      {/* validity footer */}
       <div style={{marginTop:16,padding:"14px 18px",borderRadius:10,border:"1px solid "+border,background:"rgba(0,200,255,0.04)",fontSize:13,color:dim,lineHeight:1.8}}>
         <strong style={{color:textCol}}>Validity domain: </strong>
         This model is physically exact for optical observation of stellar targets at d ≲ 600 ly with source velocities v ≪ c. All approximation errors are below 1 part in 10⁴ within this regime.
@@ -516,33 +544,32 @@ function ScientificAssumptions() {
 
 // ── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function App() {
-  const [tIdx, setTIdx] = useState(0);
+  const [tIdx, setTIdx]           = useState(0);
   const [manualMode, setManualMode] = useState(false);
-  const [mGal, setMGal] = useState("Milky Way");
-  const [mSys, setMSys] = useState("Solar System");
-  const [mPla, setMPla] = useState("Mars");
-  const [mDist, setMDist] = useState("12.5");
-  const [mUnit, setMUnit] = useState("light-minutes");
-  const [ageEv, setAgeEv] = useState("25");
-  const [lspan, setLspan] = useState("80");
-  const [autoTime, setAutoTime] = useState(true);
-  const [evD, setEvD] = useState("2026-01-01");
-  const [evT, setEvT] = useState("00:00");
-  const [obsD, setObsD] = useState(new Date().toISOString().slice(0,10));
-  const [obsT, setObsT] = useState(new Date().toISOString().slice(11,16));
-  const [clipV, setClipV] = useState("30");
-  const [clipU, setClipU] = useState("seconds");
-  const [mediaURL, setMediaURL] = useState(null);
+  const [mGal, setMGal]           = useState("Milky Way");
+  const [mSys, setMSys]           = useState("Solar System");
+  const [mPla, setMPla]           = useState("Mars");
+  const [mDist, setMDist]         = useState("12.5");
+  const [mUnit, setMUnit]         = useState("light-minutes");
+  const [ageEv, setAgeEv]         = useState("25");
+  const [lspan, setLspan]         = useState("80");
+  const [autoTime, setAutoTime]   = useState(true);
+  const [evD, setEvD]             = useState("2026-01-01");
+  const [evT, setEvT]             = useState("00:00");
+  const [obsD, setObsD]           = useState(new Date().toISOString().slice(0,10));
+  const [obsT, setObsT]           = useState(new Date().toISOString().slice(11,16));
+  const [clipV, setClipV]         = useState("30");
+  const [clipU, setClipU]         = useState("seconds");
+  const [mediaURL, setMediaURL]   = useState(null);
   const [mediaType, setMediaType] = useState(null);
   const [mediaName, setMediaName] = useState("");
-  const [videoDur, setVideoDur] = useState(0);
-
+  const [videoDur, setVideoDur]   = useState(0);
   const fileRef     = useRef();
   const videoSrcRef = useRef();
   const videoRcvRef = useRef();
-  const [prog, setProg]       = useState(0);
-  const [playing, setPlaying] = useState(false);
-  const [spd, setSpd]         = useState(1);
+  const [prog, setProg]           = useState(0);
+  const [playing, setPlaying]     = useState(false);
+  const [spd, setSpd]             = useState(1);
   const playR  = useRef(false);
   const spdR   = useRef(1);
   const progR  = useRef(0);
@@ -550,79 +577,78 @@ export default function App() {
   const lastT  = useRef(null);
   const canvasRef = useRef();
 
-  useEffect(()=>{ spdR.current=spd; },[spd]);
-  useEffect(()=>{ progR.current=prog; },[prog]);
-
+  useEffect(()=>{spdR.current=spd;},[spd]);
+  useEffect(()=>{progR.current=prog;},[prog]);
   useEffect(()=>{
-    if(!playing){ playR.current=false; cancelAnimationFrame(rafR.current); lastT.current=null; return; }
+    if(!playing){playR.current=false;cancelAnimationFrame(rafR.current);lastT.current=null;return;}
     playR.current=true;
     const tick=now=>{
-      if(!playR.current) return;
-      if(lastT.current===null) lastT.current=now;
-      const dt=(now-lastT.current)/1000; lastT.current=now;
+      if(!playR.current)return;
+      if(lastT.current===null)lastT.current=now;
+      const dt=(now-lastT.current)/1000;lastT.current=now;
       const next=Math.min(progR.current+dt*spdR.current*0.032,1);
-      progR.current=next; setProg(next);
-      if(next>=1){ playR.current=false; setPlaying(false); return; }
+      progR.current=next;setProg(next);
+      if(next>=1){playR.current=false;setPlaying(false);return;}
       rafR.current=requestAnimationFrame(tick);
     };
     rafR.current=requestAnimationFrame(tick);
-    return()=>{ playR.current=false; cancelAnimationFrame(rafR.current); };
+    return()=>{playR.current=false;cancelAnimationFrame(rafR.current);};
   },[playing]);
 
   const target = manualMode
     ? {galaxy:mGal,system:mSys,planet:mPla,color:"#80cbc4",status:"Manual",notes:"User-supplied distance.",disc_year:NaN,_distanceLY:toDistanceLY(parseFloat(mDist)||0,mUnit)}
     : TARGETS[tIdx];
 
-  const distanceLY  = target._distanceLY!=null ? target._distanceLY : target.distance_pc*PC_TO_LY;
-  const delaySec    = lyToSec(distanceLY);
-  const delayYears  = delaySec/SPY;
+  const distanceLY = target._distanceLY!=null?target._distanceLY:target.distance_pc*PC_TO_LY;
+  const delaySec   = lyToSec(distanceLY);
+  const delayYears = delaySec/SPY;
 
-  useEffect(()=>{ drawScene(canvasRef.current,prog,target); },[prog,target]);
+  useEffect(()=>{drawScene(canvasRef.current,prog,target);},[prog,target]);
 
-  const obsDT   = new Date(obsD+"T"+(obsT||"00:00")+":00Z");
-  const evDT    = autoTime ? addSec(obsDT,-delaySec) : new Date(evD+"T"+(evT||"00:00")+":00Z");
-  const arrStart= addSec(evDT,delaySec);
-  const clipSec = videoDur>0 ? videoDur : (parseFloat(clipV)||0)*({seconds:1,minutes:60,hours:3600,days:86400,years:SPY}[clipU]||1);
+  const obsDT    = new Date(obsD+"T"+(obsT||"00:00")+":00Z");
+  const evDT     = autoTime?addSec(obsDT,-delaySec):new Date(evD+"T"+(evT||"00:00")+":00Z");
+  const arrStart = addSec(evDT,delaySec);
+  const clipSec  = videoDur>0?videoDur:(parseFloat(clipV)||0)*({seconds:1,minutes:60,hours:3600,days:86400,years:SPY}[clipU]||1);
 
-  const age0            = parseFloat(ageEv)||0;
-  const ls              = parseFloat(lspan)||80;
-  const simProg         = Math.max(0,Math.min(1,prog));
-  const simTravelSec    = delaySec*simProg;
-  const simDT           = addSec(evDT,simTravelSec);
-  const arrivedOnEarth  = simProg>=1;
-  const apparentAge     = arrivedOnEarth ? age0 : NaN;
-  const actualNow       = age0+secToYr(simTravelSec);
-  const ageWhenSeen     = age0+delayYears;
-  const hiddenByDelayNow= actualNow-age0;
-  const aliveWhenSeen   = ageWhenSeen<ls;
-  const aliveNow        = actualNow<ls;
+  const age0             = parseFloat(ageEv)||0;
+  const ls               = parseFloat(lspan)||80;
+  const simProg          = Math.max(0,Math.min(1,prog));
+  const simTravelSec     = delaySec*simProg;
+  const simDT            = addSec(evDT,simTravelSec);
+  const arrivedOnEarth   = simProg>=1;
+  const apparentAge      = arrivedOnEarth?age0:NaN;
+  const actualNow        = age0+secToYr(simTravelSec);
+  const ageWhenSeen      = age0+delayYears;
+  const hiddenByDelayNow = actualNow-age0;
+  const aliveWhenSeen    = ageWhenSeen<ls;
+  const aliveNow         = actualNow<ls;
 
   let recS="not_emitted";
-  if(simProg>0&&simProg<1) recS="traveling";
-  if(arrivedOnEarth) recS="arrived";
+  if(simProg>0&&simProg<1)recS="traveling";
+  if(arrivedOnEarth)recS="arrived";
 
   useEffect(()=>{
     const v=videoRcvRef.current;
-    if(!v||mediaType!=="video") return;
-    if(!arrivedOnEarth){ v.currentTime=0; v.pause(); return; }
+    if(!v||mediaType!=="video")return;
+    if(!arrivedOnEarth){v.currentTime=0;v.pause();return;}
     v.currentTime=0;
   },[arrivedOnEarth,mediaType]);
 
   const handleMedia=useCallback(file=>{
-    if(!file) return;
-    if(mediaURL) URL.revokeObjectURL(mediaURL);
+    if(!file)return;
+    if(mediaURL)URL.revokeObjectURL(mediaURL);
     const url=URL.createObjectURL(file);
-    setMediaURL(url); setMediaName(file.name);
+    setMediaURL(url);setMediaName(file.name);
     const isVid=file.type.startsWith("video");
-    setMediaType(isVid?"video":"image"); setVideoDur(0);
+    setMediaType(isVid?"video":"image");setVideoDur(0);
     if(isVid){
-      const tmp=document.createElement("video"); tmp.src=url;
-      tmp.onloadedmetadata=()=>{ setVideoDur(tmp.duration); setClipV(Math.round(tmp.duration).toString()); setClipU("seconds"); };
+      const tmp=document.createElement("video");tmp.src=url;
+      tmp.onloadedmetadata=()=>{setVideoDur(tmp.duration);setClipV(Math.round(tmp.duration).toString());setClipU("seconds");};
     }
   },[mediaURL]);
 
-  const handlePP=()=>{ if(prog>=1){ setProg(0); progR.current=0; } setPlaying(p=>!p); lastT.current=null; };
-  const handleProg=v=>{ setProg(v); progR.current=v; };
+  const handlePP=()=>{if(prog>=1){setProg(0);progR.current=0;}setPlaying(p=>!p);lastT.current=null;};
+  const handleProg=v=>{setProg(v);progR.current=v;};
 
   const accent="#00c8ff",panel="rgba(4,18,38,0.96)",border="rgba(0,180,255,0.22)",dim="#6a8aaa",bright="#e8f4ff",textCol="#c8dff0",ok="#00e87a",danger="#ff5f5f",warn="#f5c842";
   const inp={background:"rgba(0,12,34,0.9)",border:"1px solid "+border,borderRadius:8,padding:"12px 16px",color:textCol,fontSize:17,fontFamily:"'IBM Plex Mono',monospace",outline:"none",width:"100%"};
@@ -672,21 +698,11 @@ export default function App() {
 
         {/* HEADER */}
         <div style={{textAlign:"center",marginBottom:40}}>
-          <div style={{display:"flex",justifyContent:"center",marginBottom:20}}>
-            <RSCLSeal size={260}/>
-          </div>
-          <div style={{fontSize:13,letterSpacing:5,color:dim,textTransform:"uppercase",marginBottom:10}}>
-            Reconfigurable Space Computing Lab · Cal Poly Pomona
-          </div>
-          <h1 style={{fontSize:"clamp(32px,6vw,56px)",fontWeight:900,color:"#fff",textShadow:"0 0 60px "+accent+"55",lineHeight:1.0,marginBottom:6}}>
-            EARTH LOOKBACK
-          </h1>
-          <h2 style={{fontSize:"clamp(15px,3vw,24px)",fontWeight:600,color:accent,letterSpacing:12,marginBottom:16}}>
-            SIMULATOR
-          </h2>
-          <p style={{color:dim,fontSize:17,lineHeight:1.8,maxWidth:540,margin:"0 auto"}}>
-            Choose a real exoplanet, upload a photo or video, and watch your signal travel across the cosmos to Earth.
-          </p>
+          <div style={{display:"flex",justifyContent:"center",marginBottom:20}}><RSCLSeal size={260}/></div>
+          <div style={{fontSize:13,letterSpacing:5,color:dim,textTransform:"uppercase",marginBottom:10}}>Reconfigurable Space Computing Lab · Cal Poly Pomona</div>
+          <h1 style={{fontSize:"clamp(32px,6vw,56px)",fontWeight:900,color:"#fff",textShadow:"0 0 60px "+accent+"55",lineHeight:1.0,marginBottom:6}}>EARTH LOOKBACK</h1>
+          <h2 style={{fontSize:"clamp(15px,3vw,24px)",fontWeight:600,color:accent,letterSpacing:12,marginBottom:16}}>SIMULATOR</h2>
+          <p style={{color:dim,fontSize:17,lineHeight:1.8,maxWidth:540,margin:"0 auto"}}>Choose a real exoplanet, upload a photo or video, and watch your signal travel across the cosmos to Earth.</p>
         </div>
 
         {/* STEP 1 */}
@@ -696,7 +712,7 @@ export default function App() {
             <button onClick={()=>setManualMode(false)} style={{padding:"9px 18px",borderRadius:8,border:"none",background:!manualMode?accent:"rgba(0,180,255,0.09)",color:!manualMode?"#000":dim,fontFamily:"monospace",fontSize:14,fontWeight:700,cursor:"pointer"}}>Catalog</button>
             <button onClick={()=>setManualMode(true)}  style={{padding:"9px 18px",borderRadius:8,border:"none",background:manualMode?accent:"rgba(0,180,255,0.09)",color:manualMode?"#000":dim,fontFamily:"monospace",fontSize:14,fontWeight:700,cursor:"pointer"}}>Manual Entry</button>
           </div>
-          {!manualMode ? (
+          {!manualMode?(
             <>
               <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))",gap:10,marginBottom:18}}>
                 {TARGETS.map((t,i)=>(
@@ -718,7 +734,7 @@ export default function App() {
                 <br/>{target.notes}
               </div>
             </>
-          ) : (
+          ):(
             <div className="g2">
               {[["Galaxy",mGal,setMGal],["System / Star",mSys,setMSys],["Planet / Target",mPla,setMPla]].map(([l,v,s])=>(
                 <div key={l}>
@@ -844,8 +860,8 @@ export default function App() {
               <div style={{fontSize:14,color:dim,marginBottom:10,textAlign:"center",textTransform:"uppercase",letterSpacing:1.5}}>📡  You sent this from {target.planet}</div>
               {mediaURL?(
                 mediaType==="image"
-                  ? <img src={mediaURL} alt="source" style={{width:"100%",borderRadius:10,border:"2px solid "+border,display:"block"}}/>
-                  : <video ref={videoSrcRef} src={mediaURL} controls style={{width:"100%",borderRadius:10,border:"2px solid "+border,display:"block"}}/>
+                  ?<img src={mediaURL} alt="source" style={{width:"100%",borderRadius:10,border:"2px solid "+border,display:"block"}}/>
+                  :<video ref={videoSrcRef} src={mediaURL} controls style={{width:"100%",borderRadius:10,border:"2px solid "+border,display:"block"}}/>
               ):(
                 <div style={{borderRadius:10,border:"2px dashed "+border,padding:"40px 20px",textAlign:"center",color:dim,fontSize:15}}>Upload a photo or video in Step 2 to see it here</div>
               )}
@@ -910,20 +926,13 @@ export default function App() {
         {/* QUICK EXAMPLES */}
         <details style={{background:panel,border:"1px solid "+border,borderRadius:14,padding:"16px 22px",marginBottom:14}}>
           <summary style={{fontFamily:"'Orbitron',sans-serif",fontSize:13,color:accent,letterSpacing:2}}>💡  QUICK EXAMPLES</summary>
-          <div style={{marginTop:14,fontSize:16,color:dim,lineHeight:2.2}}>
-            <strong style={{color:bright}}>Kepler-452 b (~1,799 ly) · age 25:</strong> Earth sees 25 — they're actually about 1,824. Long dead.<br/>
-            <strong style={{color:bright}}>TOI-1231 b (~90 ly) · age 25:</strong> Earth sees 25 — actually about 115. Likely dead.<br/>
-            <strong style={{color:bright}}>Proxima Cen b (~4.2 ly) · age 25:</strong> Earth sees 25 — actually about 29.2. Probably still alive.<br/>
-            <strong style={{color:bright}}>Mars (Manual · ~12.5 light-minutes) · age 25:</strong> Delay is tiny — nearly real-time.
-          </div>
+          <div style={{marginTop:16}}><QuickExamples/></div>
         </details>
 
-        {/* SCIENTIFIC ASSUMPTIONS — full panel */}
+        {/* SCIENTIFIC ASSUMPTIONS */}
         <details style={{background:panel,border:"1px solid "+border,borderRadius:14,padding:"16px 22px",marginBottom:14}}>
           <summary style={{fontFamily:"'Orbitron',sans-serif",fontSize:13,color:accent,letterSpacing:2}}>🔬  SCIENTIFIC ASSUMPTIONS & MODEL LIMITATIONS</summary>
-          <div style={{marginTop:16}}>
-            <ScientificAssumptions/>
-          </div>
+          <div style={{marginTop:16}}><ScientificAssumptions/></div>
         </details>
 
         {/* FOOTER */}
