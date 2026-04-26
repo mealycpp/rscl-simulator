@@ -573,55 +573,136 @@ function RSCLSeal({size=200}) {
   );
 }
 
-// ── QUICK EXAMPLES ────────────────────────────────────────────────────────────
-const EXAMPLES=[
-  {planet:"Kepler-452 b",system:"Kepler-452 · Milky Way",dist:"~1,799 ly",color:"#ffcc80",ageEvent:25,lifespan:80,delay:1799,isLocal:false,interp:"By the time Earth receives the signal, the person would be ~1,824 years old — vastly beyond any human lifespan. The civilization that sent this signal may no longer exist. Earth is looking nearly 18 centuries into the past."},
-  {planet:"TOI-1231 b",system:"TOI-1231 · Milky Way",dist:"~90 ly",color:"#ce93d8",ageEvent:25,lifespan:80,delay:90,isLocal:false,interp:"At 90 light-years, Earth receives the signal when the person would be ~115 years old — just past a realistic human lifespan. A 180-year round-trip makes any real conversation impossible."},
-  {planet:"Proxima Cen b",system:"Proxima Centauri · Milky Way",dist:"~4.2 ly",color:"#fff176",ageEvent:25,lifespan:80,delay:4.2,isLocal:false,interp:"Our nearest stellar neighbor. Earth receives the signal when the person is ~29.2 years old — well within a human lifespan. A two-way exchange takes ~8.4 years per round trip."},
-  {planet:"Mars",system:"Solar System · Manual",dist:"~12.5 light-min",color:"#ef9a9a",ageEvent:25,lifespan:80,delay:0.0208,isLocal:true,interp:"At ~12.5 light-minutes, the delay is imperceptible at human timescales. Real-time video calls are impossible (25-min round trip) but the aging effect is negligible."},
-];
-function statusInfo(e){const actual=e.ageEvent+e.delay;if(e.isLocal)return{label:"Near real-time",bg:"rgba(0,200,255,0.12)",col:"#00c8ff"};if(actual<e.lifespan)return{label:"Likely alive",bg:"rgba(0,232,122,0.12)",col:"#00e87a"};if(actual<e.lifespan+20)return{label:"Borderline",bg:"rgba(245,200,66,0.12)",col:"#f5c842"};return{label:"Long dead",bg:"rgba(255,95,95,0.12)",col:"#ff5f5f"};}
+// ── PLANET EXPLORER — all catalog planets, interactive, open by default ────────
+function PlanetExplorer() {
+  const [sel, setSel]             = useState(null);
+  const [age, setAge]             = useState(25);
+  const [lifespan, setLifespan]   = useState(80);
+  const [exType, setExType]       = useState("All");
+  const [exHz, setExHz]           = useState(false);
 
-function QuickExamples(){
-  const [sel,setSel]=useState(null);
-  const border="rgba(0,180,255,0.22)",dim="#6a8aaa",textCol="#c8dff0",accent="#00c8ff",panel="rgba(4,18,38,0.96)";
-  const MT=({label,value,color})=>(<div style={{background:"rgba(0,0,0,0.3)",borderRadius:8,padding:"12px 14px",border:"1px solid "+border}}><div style={{fontSize:11,color:dim,textTransform:"uppercase",letterSpacing:1.5,marginBottom:4}}>{label}</div><div style={{fontSize:18,fontWeight:700,color:color||textCol,fontFamily:"'IBM Plex Mono',monospace"}}>{value}</div></div>);
+  const border="rgba(0,180,255,0.22)",dim="#6a8aaa",textCol="#c8dff0",accent="#00c8ff",ok="#00e87a",warn="#f5c842",danger="#ff5f5f";
+  const allTypes=["All",...Array.from(new Set(TARGETS.map(t=>t.type))).sort()];
+  const filtered=TARGETS.filter(t=>(exHz?t.hz:true)&&(exType==="All"||t.type===exType));
+
+  function stOf(distLY) {
+    const actual=age+distLY, ds=distLY*SPY;
+    if(ds<3600) return{label:"Near real-time",bg:"rgba(0,200,255,0.12)",col:"#00c8ff"};
+    if(actual<lifespan) return{label:"Likely alive",bg:"rgba(0,232,122,0.12)",col:ok};
+    if(actual<lifespan+20) return{label:"Borderline",bg:"rgba(245,200,66,0.12)",col:warn};
+    return{label:"Long dead",bg:"rgba(255,95,95,0.12)",col:danger};
+  }
+
+  const MT=({label,value,color})=>(
+    <div style={{background:"rgba(0,0,0,0.3)",borderRadius:8,padding:"12px 14px",border:"1px solid "+border}}>
+      <div style={{fontSize:11,color:dim,textTransform:"uppercase",letterSpacing:1.5,marginBottom:4}}>{label}</div>
+      <div style={{fontSize:17,fontWeight:700,color:color||textCol,fontFamily:"'IBM Plex Mono',monospace"}}>{value}</div>
+    </div>
+  );
+
+  const selT = sel!==null ? filtered[sel] : null;
+
   return (
     <div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(175px,1fr))",gap:10,marginBottom:sel!==null?16:0}}>
-        {EXAMPLES.map((e,i)=>{const st=statusInfo(e);const actual=e.ageEvent+e.delay;const pct=e.isLocal?100:Math.min((e.ageEvent/actual)*100,100);return(
-          <div key={i} onClick={()=>setSel(sel===i?null:i)} style={{padding:"14px 16px",borderRadius:12,border:sel===i?"2px solid "+accent:"1px solid "+border,background:sel===i?"rgba(0,200,255,0.07)":panel,cursor:"pointer",transition:"all 0.15s"}}>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}><div style={{width:11,height:11,borderRadius:"50%",background:e.color,boxShadow:"0 0 6px "+e.color,flexShrink:0}}/><div style={{fontSize:13,fontWeight:700,color:textCol,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.planet}</div></div>
-            <div style={{fontSize:12,color:dim,marginBottom:10}}>{e.dist}</div>
-            <div style={{height:5,borderRadius:3,background:"rgba(0,180,255,0.15)",overflow:"hidden",marginBottom:6}}><div style={{height:"100%",width:pct.toFixed(1)+"%",background:st.col,borderRadius:3}}/></div>
-            <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:dim,marginBottom:10}}><span>age 25</span><span>{e.isLocal?"~25":actual.toFixed(1)} yrs</span></div>
-            <span style={{fontSize:11,padding:"3px 10px",borderRadius:99,fontWeight:600,background:st.bg,color:st.col}}>{st.label}</span>
-          </div>
-        );})}
-      </div>
-      {sel!==null&&(()=>{const e=EXAMPLES[sel];const st=statusInfo(e);const actual=e.ageEvent+e.delay;const pct=e.isLocal?100:Math.min((e.ageEvent/actual)*100+3,100);return(
-        <div style={{border:"1px solid "+border,borderRadius:12,padding:"20px 22px",background:"rgba(0,8,24,0.95)"}}>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:8}}>
-            <div><div style={{fontSize:17,fontWeight:700,color:e.color,fontFamily:"'Orbitron',sans-serif"}}>{e.planet}</div><div style={{fontSize:13,color:dim,marginTop:2}}>{e.system}</div></div>
-            <span style={{fontSize:12,padding:"4px 12px",borderRadius:99,fontWeight:600,background:st.bg,color:st.col}}>{st.label}</span>
-          </div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:10,marginBottom:16}}>
-            <MT label="Distance" value={e.dist} color={textCol}/>
-            <MT label="Earth sees" value="age 25" color={accent}/>
-            <MT label="Actual age" value={e.isLocal?"~25 yrs":actual.toFixed(1)+" yrs"} color={st.col}/>
-            <MT label="Hidden delay" value={e.isLocal?"< 1 min":e.delay.toFixed(1)+" yrs"} color={accent}/>
-          </div>
-          <div style={{marginBottom:6}}>
-            <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:dim,marginBottom:5}}><span>Age at event — 25 yrs</span><span>Actual age — {e.isLocal?"~25":actual.toFixed(1)} yrs</span></div>
-            <div style={{height:8,borderRadius:4,background:"rgba(0,180,255,0.15)",overflow:"hidden",marginBottom:4}}><div style={{height:"100%",width:pct.toFixed(1)+"%",background:st.col,borderRadius:4}}/></div>
-            <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:dim}}><span>emitted</span><span>Earth receives</span></div>
-          </div>
-          <div style={{marginTop:14,padding:"14px 16px",background:"rgba(0,200,255,0.05)",borderLeft:"3px solid "+accent,fontSize:14,color:dim,lineHeight:1.8}}>{e.interp}</div>
+      {/* controls row */}
+      <div style={{display:"flex",gap:10,marginBottom:14,flexWrap:"wrap",alignItems:"center",padding:"12px 16px",background:"rgba(0,0,0,0.3)",borderRadius:10,border:"1px solid "+border}}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <div style={{fontSize:12,color:dim,textTransform:"uppercase",letterSpacing:1,whiteSpace:"nowrap"}}>Age at event</div>
+          <input type="number" value={age} onChange={e=>setAge(parseFloat(e.target.value)||0)} min="0" max="150" step="1"
+            style={{width:68,background:"rgba(0,12,34,0.9)",border:"1px solid "+border,borderRadius:6,padding:"6px 10px",color:textCol,fontSize:15,fontFamily:"monospace",outline:"none"}}/>
         </div>
-      );})()}
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <div style={{fontSize:12,color:dim,textTransform:"uppercase",letterSpacing:1,whiteSpace:"nowrap"}}>Lifespan</div>
+          <input type="number" value={lifespan} onChange={e=>setLifespan(parseFloat(e.target.value)||80)} min="1" max="200" step="1"
+            style={{width:68,background:"rgba(0,12,34,0.9)",border:"1px solid "+border,borderRadius:6,padding:"6px 10px",color:textCol,fontSize:15,fontFamily:"monospace",outline:"none"}}/>
+        </div>
+        <select value={exType} onChange={e=>setExType(e.target.value)}
+          style={{background:"rgba(0,12,34,0.9)",border:"1px solid "+border,borderRadius:6,padding:"6px 10px",color:textCol,fontSize:13,fontFamily:"monospace",outline:"none",cursor:"pointer"}}>
+          {allTypes.map(t=><option key={t}>{t}</option>)}
+        </select>
+        <button onClick={()=>setExHz(h=>!h)}
+          style={{padding:"6px 12px",borderRadius:6,border:"1px solid "+(exHz?"rgba(0,232,122,0.6)":border),background:exHz?"rgba(0,232,122,0.12)":"transparent",color:exHz?ok:dim,fontSize:13,cursor:"pointer",fontFamily:"monospace"}}>
+          🌱 HZ only
+        </button>
+        <div style={{fontSize:12,color:dim,marginLeft:"auto"}}>{filtered.length} planets</div>
+      </div>
+
+      {/* planet grid — all matching planets */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(158px,1fr))",gap:8,marginBottom:sel!==null?14:0,maxHeight:460,overflowY:"auto",paddingRight:4}}>
+        {filtered.map((t,i)=>{
+          const distLY=t.distance_pc*PC_TO_LY;
+          const actual=age+distLY;
+          const st=stOf(distLY);
+          const pct=Math.min((age/Math.max(actual,0.0001))*100,100);
+          return(
+            <div key={i} onClick={()=>setSel(sel===i?null:i)}
+              style={{padding:"11px 13px",borderRadius:10,border:sel===i?"2px solid "+accent:"1px solid "+border,background:sel===i?"rgba(0,200,255,0.08)":"rgba(0,5,20,0.8)",cursor:"pointer",transition:"all 0.15s"}}>
+              <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:5}}>
+                <div style={{width:9,height:9,borderRadius:"50%",background:t.color,boxShadow:"0 0 5px "+t.color,flexShrink:0}}/>
+                <div style={{fontSize:12,fontWeight:700,color:sel===i?accent:textCol,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.planet}</div>
+              </div>
+              <div style={{fontSize:11,color:dim,marginBottom:3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.system}</div>
+              <div style={{fontSize:11,color:sel===i?accent:dim,marginBottom:7}}>{fmtDelay(distLY)}</div>
+              <div style={{height:4,borderRadius:2,background:"rgba(0,180,255,0.15)",overflow:"hidden",marginBottom:5}}>
+                <div style={{height:"100%",width:pct.toFixed(1)+"%",background:st.col,borderRadius:2}}/>
+              </div>
+              <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:5}}>
+                <span style={{fontSize:10,padding:"1px 5px",borderRadius:3,background:"rgba(0,180,255,0.1)",color:dim}}>{t.type}</span>
+                {t.hz&&<span style={{fontSize:10,padding:"1px 5px",borderRadius:3,background:"rgba(0,232,122,0.1)",color:ok}}>HZ</span>}
+              </div>
+              <span style={{fontSize:10,padding:"2px 7px",borderRadius:99,fontWeight:600,background:st.bg,color:st.col}}>{st.label}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* detail panel */}
+      {selT&&(()=>{
+        const distLY=selT.distance_pc*PC_TO_LY;
+        const actual=age+distLY;
+        const st=stOf(distLY);
+        const pct=Math.min((age/Math.max(actual,0.0001))*100+2,100);
+        return(
+          <div style={{border:"1px solid "+border,borderRadius:12,padding:"20px 22px",background:"rgba(0,5,20,0.95)"}}>
+            <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:8}}>
+              <div>
+                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
+                  <div style={{width:12,height:12,borderRadius:"50%",background:selT.color,boxShadow:"0 0 8px "+selT.color}}/>
+                  <div style={{fontSize:17,fontWeight:700,color:selT.color,fontFamily:"'Orbitron',sans-serif"}}>{selT.planet}</div>
+                </div>
+                <div style={{fontSize:13,color:dim}}>{selT.system} · {selT.type}{selT.hz?" · Habitable Zone":""}</div>
+                {selT.disc_year&&!isNaN(selT.disc_year)&&<div style={{fontSize:12,color:dim,marginTop:2}}>Discovered {selT.disc_year}</div>}
+              </div>
+              <span style={{fontSize:12,padding:"5px 14px",borderRadius:99,fontWeight:700,background:st.bg,color:st.col}}>{st.label}</span>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:10,marginBottom:16}}>
+              <MT label="Distance"     value={fmtDelay(distLY)}                                      color={textCol}/>
+              <MT label="Earth sees"   value={"age "+age}                                            color={accent}/>
+              <MT label="Actual age"   value={distLY<0.001?"~"+age+" yrs":actual.toFixed(1)+" yrs"} color={st.col}/>
+              <MT label="Hidden delay" value={distLY<0.001?"< 1 hr":distLY.toFixed(2)+" yrs"}      color={accent}/>
+              <MT label="Round-trip"   value={distLY<0.001?"< 2 hrs":(distLY*2).toFixed(1)+" yrs"} color={dim}/>
+              <MT label="Signal"       value={Math.round(signalQuality(distLY)*100)+"%"}             color={signalLabel(signalQuality(distLY)).col}/>
+            </div>
+            <div style={{marginBottom:12}}>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:dim,marginBottom:5}}>
+                <span>Age at event — {age} yrs</span>
+                <span>Actual age received — {distLY<0.001?"~"+age:actual.toFixed(1)} yrs</span>
+              </div>
+              <div style={{height:8,borderRadius:4,background:"rgba(0,180,255,0.15)",overflow:"hidden",marginBottom:4}}>
+                <div style={{height:"100%",width:pct.toFixed(1)+"%",background:st.col,borderRadius:4,transition:"width 0.3s"}}/>
+              </div>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:dim}}><span>emitted</span><span>Earth receives</span></div>
+            </div>
+            <div style={{padding:"12px 16px",background:"rgba(0,200,255,0.05)",borderLeft:"3px solid "+accent,fontSize:14,color:dim,lineHeight:1.8}}>
+              {selT.notes}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
+
 
 // ── SCIENTIFIC ASSUMPTIONS ────────────────────────────────────────────────────
 function ScientificAssumptions(){
