@@ -21,19 +21,19 @@ const addSec = (d, s) => new Date(d.getTime() + s * 1000);
 
 function toDistanceLY(v, u) {
   if (u === "light-minutes") return (v * 60) / SPY;
-  if (u === "light-hours") return (v * 3600) / SPY;
-  if (u === "light-days") return (v * 86400) / SPY;
-  if (u === "light-years") return v;
-  if (u === "parsecs") return v * PC_TO_LY;
+  if (u === "light-hours")   return (v * 3600) / SPY;
+  if (u === "light-days")    return (v * 86400) / SPY;
+  if (u === "light-years")   return v;
+  if (u === "parsecs")       return v * PC_TO_LY;
   return v;
 }
 
 function fmtDelay(distanceLY) {
   const s = lyToSec(distanceLY);
-  if (s < 120) return s.toFixed(1) + " seconds";
-  if (s < 7200) return (s / 60).toFixed(1) + " minutes";
-  if (s < 172800) return (s / 3600).toFixed(1) + " hours";
-  if (s < SPY) return (s / 86400).toFixed(1) + " days";
+  if (s < 120)      return s.toFixed(1) + " seconds";
+  if (s < 7200)     return (s / 60).toFixed(1) + " minutes";
+  if (s < 172800)   return (s / 3600).toFixed(1) + " hours";
+  if (s < SPY)      return (s / 86400).toFixed(1) + " days";
   if (distanceLY < 10) return distanceLY.toFixed(3) + " light-years";
   return Math.round(distanceLY).toLocaleString() + " light-years";
 }
@@ -66,254 +66,124 @@ function drawScene(canvas, prog, target) {
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
-  [[W * 0.2, H * 0.3, 90, "rgba(20,0,60,0.3)"], [W * 0.75, H * 0.6, 70, "rgba(0,20,80,0.25)"]].forEach(function(n) {
-    var g = ctx.createRadialGradient(n[0], n[1], 0, n[0], n[1], n[2]);
-    g.addColorStop(0, n[3]);
-    g.addColorStop(1, "transparent");
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(n[0], n[1], n[2], 0, Math.PI * 2);
-    ctx.fill();
+  [[W*0.2,H*0.3,90,"rgba(20,0,60,0.3)"],[W*0.75,H*0.6,70,"rgba(0,20,80,0.25)"]].forEach(function(n){
+    var g=ctx.createRadialGradient(n[0],n[1],0,n[0],n[1],n[2]);
+    g.addColorStop(0,n[3]);g.addColorStop(1,"transparent");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(n[0],n[1],n[2],0,Math.PI*2);ctx.fill();
   });
 
-  var seed = function(n) { var s = n * 9301 + 49297; return (s % 233280) / 233280; };
-  for (var i = 0; i < 140; i++) {
-    var sx = seed(i * 3) * W, sy = seed(i * 3 + 1) * H, sr = seed(i * 3 + 2) * 1.4 + 0.2;
-    ctx.beginPath();
-    ctx.arc(sx, sy, sr, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(200,220,255," + (0.2 + seed(i * 7) * 0.65) + ")";
-    ctx.fill();
+  var seed=function(n){var s=n*9301+49297;return(s%233280)/233280;};
+  for(var i=0;i<140;i++){
+    var sx=seed(i*3)*W,sy=seed(i*3+1)*H,sr=seed(i*3+2)*1.4+0.2;
+    ctx.beginPath();ctx.arc(sx,sy,sr,0,Math.PI*2);
+    ctx.fillStyle="rgba(200,220,255,"+(0.2+seed(i*7)*0.65)+")";ctx.fill();
   }
 
-  var PX = 130, EX = W - 120, MY = H / 2, span = EX - PX;
+  var PX=130,EX=W-120,MY=H/2,span=EX-PX;
 
-  ctx.font = "bold 13px 'IBM Plex Mono',monospace";
-  ctx.fillStyle = "rgba(0,200,255,0.35)";
-  ctx.textAlign = "center";
-  ctx.fillText("✦  " + target.galaxy + "  ✦", W / 2, 22);
+  ctx.font="bold 13px 'IBM Plex Mono',monospace";
+  ctx.fillStyle="rgba(0,200,255,0.35)";ctx.textAlign="center";
+  ctx.fillText("✦  "+target.galaxy+"  ✦",W/2,22);
 
-  ctx.strokeStyle = "rgba(0,180,255,0.12)";
-  ctx.lineWidth = 1;
-  ctx.setLineDash([6, 8]);
-  ctx.beginPath();
-  ctx.moveTo(PX, MY);
-  ctx.lineTo(EX, MY);
-  ctx.stroke();
-  ctx.setLineDash([]);
+  ctx.strokeStyle="rgba(0,180,255,0.12)";ctx.lineWidth=1;ctx.setLineDash([6,8]);
+  ctx.beginPath();ctx.moveTo(PX,MY);ctx.lineTo(EX,MY);ctx.stroke();ctx.setLineDash([]);
 
-  ctx.font = "12px 'IBM Plex Mono',monospace";
-  ctx.fillStyle = "rgba(0,180,255,0.3)";
-  ctx.textAlign = "center";
-  ctx.fillText("← " + fmtDelay(distanceLY) + " →", W / 2, MY - 18);
+  ctx.font="12px 'IBM Plex Mono',monospace";ctx.fillStyle="rgba(0,180,255,0.3)";ctx.textAlign="center";
+  ctx.fillText("← "+fmtDelay(distanceLY)+" →",W/2,MY-18);
 
-  var sX = PX - 55, sY = MY - 40;
-  var stG = ctx.createRadialGradient(sX, sY, 0, sX, sY, 22);
-  stG.addColorStop(0, "rgba(255,248,200,1)");
-  stG.addColorStop(0.4, "rgba(255,200,80,0.4)");
-  stG.addColorStop(1, "transparent");
-  ctx.fillStyle = stG;
-  ctx.beginPath();
-  ctx.arc(sX, sY, 22, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(sX, sY, 6, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(255,255,220,1)";
-  ctx.fill();
-  for (var ri = 0; ri < 8; ri++) {
-    var ra = ri * Math.PI / 4;
-    ctx.beginPath();
-    ctx.moveTo(sX + Math.cos(ra) * 8, sY + Math.sin(ra) * 8);
-    ctx.lineTo(sX + Math.cos(ra) * 18, sY + Math.sin(ra) * 18);
-    ctx.strokeStyle = "rgba(255,230,100,0.35)";
-    ctx.lineWidth = 1;
-    ctx.stroke();
+  var sX=PX-55,sY=MY-40;
+  var stG=ctx.createRadialGradient(sX,sY,0,sX,sY,22);
+  stG.addColorStop(0,"rgba(255,248,200,1)");stG.addColorStop(0.4,"rgba(255,200,80,0.4)");stG.addColorStop(1,"transparent");
+  ctx.fillStyle=stG;ctx.beginPath();ctx.arc(sX,sY,22,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(sX,sY,6,0,Math.PI*2);ctx.fillStyle="rgba(255,255,220,1)";ctx.fill();
+  for(var ri=0;ri<8;ri++){
+    var ra=ri*Math.PI/4;
+    ctx.beginPath();ctx.moveTo(sX+Math.cos(ra)*8,sY+Math.sin(ra)*8);ctx.lineTo(sX+Math.cos(ra)*18,sY+Math.sin(ra)*18);
+    ctx.strokeStyle="rgba(255,230,100,0.35)";ctx.lineWidth=1;ctx.stroke();
   }
 
-  ctx.beginPath();
-  ctx.arc(PX, MY, 30 * 2.8, 0, Math.PI * 2);
-  ctx.fillStyle = col + "18";
-  ctx.fill();
+  ctx.beginPath();ctx.arc(PX,MY,30*2.8,0,Math.PI*2);ctx.fillStyle=col+"18";ctx.fill();
+  var pG=ctx.createRadialGradient(PX-9,MY-9,3,PX,MY,30);
+  pG.addColorStop(0,"rgba(255,255,255,0.3)");pG.addColorStop(0.4,col);pG.addColorStop(1,"rgba(0,0,0,0.7)");
+  ctx.beginPath();ctx.arc(PX,MY,30,0,Math.PI*2);ctx.fillStyle=pG;ctx.fill();
 
-  var pG = ctx.createRadialGradient(PX - 9, MY - 9, 3, PX, MY, 30);
-  pG.addColorStop(0, "rgba(255,255,255,0.3)");
-  pG.addColorStop(0.4, col);
-  pG.addColorStop(1, "rgba(0,0,0,0.7)");
-  ctx.beginPath();
-  ctx.arc(PX, MY, 30, 0, Math.PI * 2);
-  ctx.fillStyle = pG;
-  ctx.fill();
+  ctx.save();ctx.beginPath();ctx.arc(PX,MY,30,0,Math.PI*2);ctx.clip();
+  ctx.strokeStyle="rgba(0,0,0,0.12)";ctx.lineWidth=3;
+  [-10,3,14].forEach(function(dy){ctx.beginPath();ctx.ellipse(PX,MY+dy,30,6,0,0,Math.PI*2);ctx.stroke();});
+  ctx.restore();
 
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(PX, MY, 30, 0, Math.PI * 2);
-  ctx.clip();
-  ctx.strokeStyle = "rgba(0,0,0,0.12)";
-  ctx.lineWidth = 3;
-  [-10, 3, 14].forEach(function(dy) {
-    ctx.beginPath();
-    ctx.ellipse(PX, MY + dy, 30, 6, 0, 0, Math.PI * 2);
-    ctx.stroke();
+  ctx.beginPath();ctx.arc(PX,MY,34,0,Math.PI*2);ctx.strokeStyle="rgba(255,255,255,0.1)";ctx.lineWidth=2.5;ctx.stroke();
+  ctx.beginPath();ctx.ellipse(PX,MY+8,46,12,0,0,Math.PI*2);ctx.strokeStyle="rgba(255,255,255,0.08)";ctx.lineWidth=1.5;ctx.stroke();
+
+  ctx.font="bold 15px 'IBM Plex Mono',monospace";ctx.fillStyle=col;ctx.textAlign="center";
+  ctx.fillText(target.planet,PX,MY+58);
+  ctx.font="12px 'IBM Plex Mono',monospace";ctx.fillStyle="rgba(0,200,255,0.5)";
+  ctx.fillText(target.system,PX,MY+74);
+
+  if(p<0.05){var f=1-p/0.05;ctx.beginPath();ctx.arc(PX,MY,30+f*32,0,Math.PI*2);ctx.strokeStyle="rgba(255,255,255,"+(f*0.55)+")";ctx.lineWidth=3;ctx.stroke();}
+
+  var sigX=PX+span*p;
+  if(p>0){
+    var tLen=Math.min(span*p,220);
+    var tG=ctx.createLinearGradient(sigX-tLen,MY,sigX,MY);
+    tG.addColorStop(0,"transparent");tG.addColorStop(0.6,"rgba(0,200,255,0.07)");tG.addColorStop(1,"rgba(0,235,255,0.65)");
+    ctx.strokeStyle=tG;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(Math.max(PX,sigX-tLen),MY);ctx.lineTo(sigX,MY);ctx.stroke();
+    [0,1,2].forEach(function(ri){ctx.beginPath();ctx.arc(sigX,MY,6+ri*7,0,Math.PI*2);ctx.strokeStyle="rgba(0,225,255,"+(0.55-ri*0.18)+")";ctx.lineWidth=1.3;ctx.stroke();});
+    var ph=ctx.createRadialGradient(sigX,MY,0,sigX,MY,9);
+    ph.addColorStop(0,"rgba(255,255,255,1)");ph.addColorStop(0.4,"rgba(0,245,255,0.95)");ph.addColorStop(1,"transparent");
+    ctx.fillStyle=ph;ctx.beginPath();ctx.arc(sigX,MY,9,0,Math.PI*2);ctx.fill();
+  }
+
+  if(p>0.04&&p<0.96){
+    var traveledLY=distanceLY*p;
+    ctx.font="12px 'IBM Plex Mono',monospace";ctx.fillStyle="rgba(0,240,255,0.85)";ctx.textAlign="center";
+    ctx.fillText((traveledLY<1?fmtDelay(traveledLY):traveledLY.toFixed(1)+" ly")+" traveled",sigX,MY-28);
+  }
+
+  [0.25,0.5,0.75].forEach(function(t){
+    var tx=PX+span*t;
+    ctx.strokeStyle="rgba(0,180,255,0.2)";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(tx,MY+5);ctx.lineTo(tx,MY+14);ctx.stroke();
+    var tickLY=distanceLY*t;
+    ctx.font="10px 'IBM Plex Mono',monospace";ctx.fillStyle="rgba(0,180,255,0.3)";ctx.textAlign="center";
+    ctx.fillText(tickLY<1?fmtDelay(tickLY):tickLY.toFixed(1)+" ly",tx,MY+26);
+  });
+
+  var eGl=ctx.createRadialGradient(EX,MY,10,EX,MY,90);
+  eGl.addColorStop(0,"rgba(0,100,255,0.2)");eGl.addColorStop(1,"transparent");
+  ctx.fillStyle=eGl;ctx.beginPath();ctx.arc(EX,MY,90,0,Math.PI*2);ctx.fill();
+
+  var eG=ctx.createRadialGradient(EX-10,MY-10,3,EX,MY,30);
+  eG.addColorStop(0,"rgba(140,215,255,0.95)");eG.addColorStop(0.3,"#1565c0");eG.addColorStop(0.75,"#0d47a1");eG.addColorStop(1,"rgba(0,6,40,0.9)");
+  ctx.beginPath();ctx.arc(EX,MY,30,0,Math.PI*2);ctx.fillStyle=eG;ctx.fill();
+
+  ctx.save();ctx.beginPath();ctx.arc(EX,MY,30,0,Math.PI*2);ctx.clip();
+  ctx.fillStyle="rgba(55,168,75,0.75)";
+  [[EX-12,MY-10,10,7,0.3],[EX+8,MY+7,12,8,0.2],[EX-5,MY+12,8,5,0.4]].forEach(function(v){
+    ctx.beginPath();ctx.ellipse(v[0],v[1],v[2],v[3],v[4],0,Math.PI*2);ctx.fill();
   });
   ctx.restore();
 
-  ctx.beginPath();
-  ctx.arc(PX, MY, 34, 0, Math.PI * 2);
-  ctx.strokeStyle = "rgba(255,255,255,0.1)";
-  ctx.lineWidth = 2.5;
-  ctx.stroke();
+  ctx.beginPath();ctx.arc(EX,MY,35,0,Math.PI*2);ctx.strokeStyle="rgba(110,190,255,0.3)";ctx.lineWidth=4;ctx.stroke();
+  ctx.beginPath();ctx.ellipse(EX,MY+10,48,13,0,0,Math.PI*2);ctx.strokeStyle="rgba(100,180,255,0.12)";ctx.lineWidth=1.5;ctx.stroke();
 
-  ctx.beginPath();
-  ctx.ellipse(PX, MY + 8, 46, 12, 0, 0, Math.PI * 2);
-  ctx.strokeStyle = "rgba(255,255,255,0.08)";
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
+  ctx.font="bold 15px 'IBM Plex Mono',monospace";ctx.fillStyle="#4fc3f7";ctx.textAlign="center";
+  ctx.fillText("EARTH",EX,MY+58);
+  ctx.font="12px 'IBM Plex Mono',monospace";ctx.fillStyle="rgba(0,200,255,0.5)";
+  ctx.fillText("Observer",EX,MY+74);
 
-  ctx.font = "bold 15px 'IBM Plex Mono',monospace";
-  ctx.fillStyle = col;
-  ctx.textAlign = "center";
-  ctx.fillText(target.planet, PX, MY + 58);
-  ctx.font = "12px 'IBM Plex Mono',monospace";
-  ctx.fillStyle = "rgba(0,200,255,0.5)";
-  ctx.fillText(target.system, PX, MY + 74);
-
-  if (p < 0.05) {
-    var f = 1 - p / 0.05;
-    ctx.beginPath();
-    ctx.arc(PX, MY, 30 + f * 32, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(255,255,255," + (f * 0.55) + ")";
-    ctx.lineWidth = 3;
-    ctx.stroke();
+  if(p>0.95){
+    var fl=(p-0.95)/0.05;
+    ctx.beginPath();ctx.arc(EX,MY,30+fl*55,0,Math.PI*2);ctx.strokeStyle="rgba(0,255,200,"+(1-fl)*0.9+")";ctx.lineWidth=3.5;ctx.stroke();
+    var bg2=ctx.createRadialGradient(EX,MY,0,EX,MY,100);
+    bg2.addColorStop(0,"rgba(0,255,180,"+(fl*0.3)+")");bg2.addColorStop(1,"transparent");
+    ctx.fillStyle=bg2;ctx.beginPath();ctx.arc(EX,MY,100,0,Math.PI*2);ctx.fill();
   }
 
-  var sigX = PX + span * p;
-  if (p > 0) {
-    var tLen = Math.min(span * p, 220);
-    var tG = ctx.createLinearGradient(sigX - tLen, MY, sigX, MY);
-    tG.addColorStop(0, "transparent");
-    tG.addColorStop(0.6, "rgba(0,200,255,0.07)");
-    tG.addColorStop(1, "rgba(0,235,255,0.65)");
-    ctx.strokeStyle = tG;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(Math.max(PX, sigX - tLen), MY);
-    ctx.lineTo(sigX, MY);
-    ctx.stroke();
-
-    [0, 1, 2].forEach(function(ri) {
-      ctx.beginPath();
-      ctx.arc(sigX, MY, 6 + ri * 7, 0, Math.PI * 2);
-      ctx.strokeStyle = "rgba(0,225,255," + (0.55 - ri * 0.18) + ")";
-      ctx.lineWidth = 1.3;
-      ctx.stroke();
-    });
-
-    var ph = ctx.createRadialGradient(sigX, MY, 0, sigX, MY, 9);
-    ph.addColorStop(0, "rgba(255,255,255,1)");
-    ph.addColorStop(0.4, "rgba(0,245,255,0.95)");
-    ph.addColorStop(1, "transparent");
-    ctx.fillStyle = ph;
-    ctx.beginPath();
-    ctx.arc(sigX, MY, 9, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  if (p > 0.04 && p < 0.96) {
-    var traveledLY = distanceLY * p;
-    ctx.font = "12px 'IBM Plex Mono',monospace";
-    ctx.fillStyle = "rgba(0,240,255,0.85)";
-    ctx.textAlign = "center";
-    ctx.fillText((traveledLY < 1 ? fmtDelay(traveledLY) : traveledLY.toFixed(1) + " ly") + " traveled", sigX, MY - 28);
-  }
-
-  [0.25, 0.5, 0.75].forEach(function(t) {
-    var tx = PX + span * t;
-    ctx.strokeStyle = "rgba(0,180,255,0.2)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(tx, MY + 5);
-    ctx.lineTo(tx, MY + 14);
-    ctx.stroke();
-    var tickLY = distanceLY * t;
-    ctx.font = "10px 'IBM Plex Mono',monospace";
-    ctx.fillStyle = "rgba(0,180,255,0.3)";
-    ctx.textAlign = "center";
-    ctx.fillText(tickLY < 1 ? fmtDelay(tickLY) : tickLY.toFixed(1) + " ly", tx, MY + 26);
-  });
-
-  var eGl = ctx.createRadialGradient(EX, MY, 10, EX, MY, 90);
-  eGl.addColorStop(0, "rgba(0,100,255,0.2)");
-  eGl.addColorStop(1, "transparent");
-  ctx.fillStyle = eGl;
-  ctx.beginPath();
-  ctx.arc(EX, MY, 90, 0, Math.PI * 2);
-  ctx.fill();
-
-  var eG = ctx.createRadialGradient(EX - 10, MY - 10, 3, EX, MY, 30);
-  eG.addColorStop(0, "rgba(140,215,255,0.95)");
-  eG.addColorStop(0.3, "#1565c0");
-  eG.addColorStop(0.75, "#0d47a1");
-  eG.addColorStop(1, "rgba(0,6,40,0.9)");
-  ctx.beginPath();
-  ctx.arc(EX, MY, 30, 0, Math.PI * 2);
-  ctx.fillStyle = eG;
-  ctx.fill();
-
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(EX, MY, 30, 0, Math.PI * 2);
-  ctx.clip();
-  ctx.fillStyle = "rgba(55,168,75,0.75)";
-  [[EX - 12, MY - 10, 10, 7, 0.3], [EX + 8, MY + 7, 12, 8, 0.2], [EX - 5, MY + 12, 8, 5, 0.4]].forEach(function(v) {
-    ctx.beginPath();
-    ctx.ellipse(v[0], v[1], v[2], v[3], v[4], 0, Math.PI * 2);
-    ctx.fill();
-  });
-  ctx.restore();
-
-  ctx.beginPath();
-  ctx.arc(EX, MY, 35, 0, Math.PI * 2);
-  ctx.strokeStyle = "rgba(110,190,255,0.3)";
-  ctx.lineWidth = 4;
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.ellipse(EX, MY + 10, 48, 13, 0, 0, Math.PI * 2);
-  ctx.strokeStyle = "rgba(100,180,255,0.12)";
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-
-  ctx.font = "bold 15px 'IBM Plex Mono',monospace";
-  ctx.fillStyle = "#4fc3f7";
-  ctx.textAlign = "center";
-  ctx.fillText("EARTH", EX, MY + 58);
-  ctx.font = "12px 'IBM Plex Mono',monospace";
-  ctx.fillStyle = "rgba(0,200,255,0.5)";
-  ctx.fillText("Observer", EX, MY + 74);
-
-  if (p > 0.95) {
-    var fl = (p - 0.95) / 0.05;
-    ctx.beginPath();
-    ctx.arc(EX, MY, 30 + fl * 55, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgba(0,255,200," + ((1 - fl) * 0.9) + ")";
-    ctx.lineWidth = 3.5;
-    ctx.stroke();
-    var bg2 = ctx.createRadialGradient(EX, MY, 0, EX, MY, 100);
-    bg2.addColorStop(0, "rgba(0,255,180," + (fl * 0.3) + ")");
-    bg2.addColorStop(1, "transparent");
-    ctx.fillStyle = bg2;
-    ctx.beginPath();
-    ctx.arc(EX, MY, 100, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  if (p >= 1) {
-    ctx.font = "bold 16px 'IBM Plex Mono',monospace";
-    ctx.fillStyle = "rgba(0,245,110,0.95)";
-    ctx.textAlign = "center";
-    ctx.fillText("✓  SIGNAL OBSERVED ON EARTH", EX, MY - 66);
-    ctx.font = "13px 'IBM Plex Mono',monospace";
-    ctx.fillStyle = "rgba(0,200,255,0.75)";
-    ctx.fillText("Delay: " + fmtDelay(distanceLY), EX, MY - 48);
+  if(p>=1){
+    ctx.font="bold 16px 'IBM Plex Mono',monospace";ctx.fillStyle="rgba(0,245,110,0.95)";ctx.textAlign="center";
+    ctx.fillText("✓  SIGNAL OBSERVED ON EARTH",EX,MY-66);
+    ctx.font="13px 'IBM Plex Mono',monospace";ctx.fillStyle="rgba(0,200,255,0.75)";
+    ctx.fillText("Delay: "+fmtDelay(distanceLY),EX,MY-48);
   }
 }
 
@@ -327,12 +197,9 @@ function StarField() {
       W = c.width = window.innerWidth;
       H = c.height = window.innerHeight;
       stars = Array.from({ length: 280 }, () => ({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        r: Math.random() * 1.4 + 0.2,
-        a: Math.random() * 0.6 + 0.2,
-        sp: Math.random() * 0.25 + 0.04,
-        ph: Math.random() * Math.PI * 2
+        x: Math.random() * W, y: Math.random() * H,
+        r: Math.random() * 1.4 + 0.2, a: Math.random() * 0.6 + 0.2,
+        sp: Math.random() * 0.25 + 0.04, ph: Math.random() * Math.PI * 2
       }));
     }
     init();
@@ -341,78 +208,201 @@ function StarField() {
       ctx.clearRect(0, 0, W, H);
       stars.forEach(s => {
         const a = s.a * (0.5 + 0.5 * Math.sin(t * s.sp + s.ph));
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(180,220,255," + a + ")";
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(180,220,255," + a + ")"; ctx.fill();
       });
       t += 0.01;
       raf = requestAnimationFrame(draw);
     }
     draw();
     window.addEventListener("resize", init);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", init);
-    };
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", init); };
   }, []);
-  return <canvas ref={ref} style={{ position: "fixed", inset: 0, width: "100%", height: "100%", zIndex: 0, pointerEvents: "none" }} />;
+  return <canvas ref={ref} style={{ position:"fixed", inset:0, width:"100%", height:"100%", zIndex:0, pointerEvents:"none" }} />;
 }
 
-// ── RSCL SEAL ────────────────────────────────────────────────────────────────
-function RSCLSeal({ size = 130 }) {
-  const r = size / 2, cx = r, cy = r, outerR = r - 2, innerR = r - 14, coreR = r - 28;
-  const arcText = (text, radius, startAngle, ls = 8.2) => text.split("").map((ch, i) => {
-    const total = (text.length - 1) * ls, angle = startAngle + i * ls - total / 2, rad = angle * Math.PI / 180;
-    const x = cx + radius * Math.sin(rad), y = cy - radius * Math.cos(rad);
-    return (
-      <text
-        key={i}
-        x={x}
-        y={y}
-        textAnchor="middle"
-        dominantBaseline="middle"
-        transform={"rotate(" + angle + "," + x + "," + y + ")"}
-        style={{ fontSize: size * 0.073, fontFamily: "Georgia,serif", fill: "#c8dff0", fontWeight: 600 }}
-      >
-        {ch}
-      </text>
-    );
-  });
-  const g = coreR * 0.38;
+// ── RSCL SEAL (Sci-Fi v3) ────────────────────────────────────────────────────
+function RSCLSeal({ size = 200 }) {
+  const scale = size / 560;
   return (
-    <svg width={size} height={size} viewBox={"0 0 " + size + " " + size} style={{ display: "block", filter: "drop-shadow(0 0 14px rgba(0,200,255,0.4))" }}>
-      <defs>
-        <radialGradient id="sg"><stop offset="0%" stopColor="#0a2a4a" /><stop offset="100%" stopColor="#020811" /></radialGradient>
-        <radialGradient id="cg"><stop offset="0%" stopColor="#0d3560" /><stop offset="100%" stopColor="#041830" /></radialGradient>
-      </defs>
-      <circle cx={cx} cy={cy} r={outerR} fill="url(#sg)" stroke="rgba(0,200,255,0.65)" strokeWidth={1.5} />
-      <circle cx={cx} cy={cy} r={outerR - 6} fill="none" stroke="rgba(0,200,255,0.2)" strokeWidth={0.8} strokeDasharray="3 4" />
-      <circle cx={cx} cy={cy} r={innerR} fill="none" stroke="rgba(0,200,255,0.4)" strokeWidth={1} />
-      <circle cx={cx} cy={cy} r={coreR} fill="url(#cg)" stroke="rgba(0,200,255,0.5)" strokeWidth={1} />
-      {arcText("RECONFIGURABLE · SPACE · COMPUTING · LAB", outerR - 9, 0, 8.2)}
-      {arcText("CAL POLY POMONA", outerR - 9, 180, 10.5)}
-      <rect x={cx - g} y={cy - g} width={g * 2} height={g * 2} rx={3} fill="rgba(0,200,255,0.1)" stroke="rgba(0,200,255,0.7)" strokeWidth={1.2} />
-      {[1, 2].map(i => [
-        <line key={"h" + i} x1={cx - g} y1={cy - g + i * (g * 2 / 3)} x2={cx + g} y2={cy - g + i * (g * 2 / 3)} stroke="rgba(0,200,255,0.25)" strokeWidth={0.6} />,
-        <line key={"v" + i} x1={cx - g + i * (g * 2 / 3)} y1={cy - g} x2={cx - g + i * (g * 2 / 3)} y2={cy + g} stroke="rgba(0,200,255,0.25)" strokeWidth={0.6} />
-      ])}
-      {[-1, 0, 1].map(pp => [
-        <line key={"pl" + pp} x1={cx - g} y1={cy + pp * g * 0.55} x2={cx - g - g * 0.35} y2={cy + pp * g * 0.55} stroke="rgba(0,200,255,0.6)" strokeWidth={1} />,
-        <line key={"pr" + pp} x1={cx + g} y1={cy + pp * g * 0.55} x2={cx + g + g * 0.35} y2={cy + pp * g * 0.55} stroke="rgba(0,200,255,0.6)" strokeWidth={1} />,
-        <line key={"pt" + pp} x1={cx + pp * g * 0.55} y1={cy - g} x2={cx + pp * g * 0.55} y2={cy - g - g * 0.35} stroke="rgba(0,200,255,0.6)" strokeWidth={1} />,
-        <line key={"pb" + pp} x1={cx + pp * g * 0.55} y1={cy + g} x2={cx + pp * g * 0.55} y2={cy + g + g * 0.35} stroke="rgba(0,200,255,0.6)" strokeWidth={1} />
-      ])}
-      <circle cx={cx} cy={cy} r={g * 1.5} fill="none" stroke="rgba(0,200,255,0.15)" strokeWidth={0.8} strokeDasharray="2 3" />
-      <circle cx={cx + g * 1.5 * Math.cos(-40 * Math.PI / 180)} cy={cy + g * 1.5 * Math.sin(-40 * Math.PI / 180)} r={2.5} fill="#00c8ff" opacity={0.85} />
-      <text x={cx} y={cy + coreR * 0.68} textAnchor="middle" dominantBaseline="middle" style={{ fontSize: size * 0.108, fontFamily: "Georgia,serif", fill: "rgba(0,200,255,0.92)", fontWeight: 700, letterSpacing: 1 }}>
-        RSCL@CPP
-      </text>
-      {[0, 90, 180, 270].map(a => {
-        const rad = (a - 90) * Math.PI / 180;
-        return <circle key={a} cx={cx + outerR * Math.cos(rad)} cy={cy + outerR * Math.sin(rad)} r={2.2} fill="#00c8ff" opacity={0.85} />;
-      })}
-    </svg>
+    <div style={{ width: size, height: size * (560/680), display:"block", filter:"drop-shadow(0 0 18px rgba(0,200,255,0.5))" }}>
+      <svg width={size} height={size * (560/680)} viewBox="0 0 680 560" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <style>{`
+            @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap');
+            @keyframes rsclspin1{from{transform-origin:340px 240px;transform:rotate(0deg)}to{transform-origin:340px 240px;transform:rotate(360deg)}}
+            @keyframes rsclspin2{from{transform-origin:340px 240px;transform:rotate(0deg)}to{transform-origin:340px 240px;transform:rotate(-360deg)}}
+            @keyframes rsclpulse{0%,100%{opacity:0.6}50%{opacity:1}}
+            @keyframes rsclbeam{0%,100%{opacity:0.5;stroke-dashoffset:0}50%{opacity:1;stroke-dashoffset:-14}}
+            @keyframes rscltw{0%,100%{opacity:0.2}50%{opacity:1}}
+            .rr1{animation:rsclspin1 20s linear infinite}
+            .rr2{animation:rsclspin2 30s linear infinite}
+            .rpc{animation:rsclpulse 2.6s ease-in-out infinite}
+            .rbm{animation:rsclbeam 1.8s ease-in-out infinite;stroke-dasharray:6 4}
+            .rtw1{animation:rscltw 2.1s ease-in-out infinite}
+            .rtw2{animation:rscltw 3.3s ease-in-out infinite 0.6s}
+            .rtw3{animation:rscltw 1.9s ease-in-out infinite 1.2s}
+            .rtw4{animation:rscltw 2.8s ease-in-out infinite 0.4s}
+            .rtw5{animation:rscltw 3.6s ease-in-out infinite 1.8s}
+          `}</style>
+          <radialGradient id="sv" cx="50%" cy="50%" r="52%">
+            <stop offset="0%" stopColor="#040d1e"/>
+            <stop offset="70%" stopColor="#010812"/>
+            <stop offset="100%" stopColor="#000408"/>
+          </radialGradient>
+          <radialGradient id="sn1" cx="38%" cy="42%" r="55%">
+            <stop offset="0%" stopColor="#0a1a4a" stopOpacity="0.9"/>
+            <stop offset="100%" stopColor="#0a1a4a" stopOpacity="0"/>
+          </radialGradient>
+          <radialGradient id="sn2" cx="65%" cy="60%" r="48%">
+            <stop offset="0%" stopColor="#0d0a30" stopOpacity="0.7"/>
+            <stop offset="100%" stopColor="#0d0a30" stopOpacity="0"/>
+          </radialGradient>
+          <radialGradient id="ssg" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#ffffff"/>
+            <stop offset="25%" stopColor="#ffe680"/>
+            <stop offset="65%" stopColor="#ff9a20" stopOpacity="0.35"/>
+            <stop offset="100%" stopColor="#ff6000" stopOpacity="0"/>
+          </radialGradient>
+          <radialGradient id="seg" cx="36%" cy="33%" r="65%">
+            <stop offset="0%" stopColor="#4ab8ff"/>
+            <stop offset="35%" stopColor="#1560b0"/>
+            <stop offset="72%" stopColor="#0b3870"/>
+            <stop offset="100%" stopColor="#041428"/>
+          </radialGradient>
+          <radialGradient id="sat" cx="50%" cy="50%" r="50%">
+            <stop offset="74%" stopColor="#4fc3f7" stopOpacity="0"/>
+            <stop offset="100%" stopColor="#4fc3f7" stopOpacity="0.38"/>
+          </radialGradient>
+          <radialGradient id="scg" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#00eeff" stopOpacity="0.2"/>
+            <stop offset="100%" stopColor="#00eeff" stopOpacity="0"/>
+          </radialGradient>
+          <clipPath id="sec"><circle cx="430" cy="230" r="40"/></clipPath>
+          <clipPath id="ssc"><circle cx="340" cy="240" r="228"/></clipPath>
+          <filter id="sfg">
+            <feGaussianBlur stdDeviation="3.5" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        {/* outer plate */}
+        <circle cx="340" cy="240" r="240" fill="#020915" stroke="#00c8ff" strokeWidth="2.8" strokeOpacity="0.55"/>
+        <circle cx="340" cy="240" r="237" fill="none" stroke="#00c8ff" strokeWidth="0.6" strokeOpacity="0.18"/>
+
+        {/* notch marks */}
+        <g stroke="#00c8ff" strokeWidth="1.8" strokeOpacity="0.6">
+          <line x1="340" y1="2"   x2="340" y2="20"/>
+          <line x1="340" y1="460" x2="340" y2="478"/>
+          <line x1="100" y1="240" x2="118" y2="240"/>
+          <line x1="562" y1="240" x2="580" y2="240"/>
+          <line x1="170" y1="70"  x2="182" y2="90"/>
+          <line x1="498" y1="390" x2="510" y2="410"/>
+          <line x1="510" y1="70"  x2="498" y2="90"/>
+          <line x1="182" y1="390" x2="170" y2="410"/>
+        </g>
+        <polygon points="340,3 346,12 340,21 334,12"      fill="#00c8ff" opacity="0.95"/>
+        <polygon points="340,459 346,468 340,477 334,468" fill="#00c8ff" opacity="0.95"/>
+        <polygon points="100,240 109,234 118,240 109,246" fill="#00c8ff" opacity="0.95"/>
+        <polygon points="562,240 571,234 580,240 571,246" fill="#00c8ff" opacity="0.95"/>
+
+        {/* space bg */}
+        <g clipPath="url(#ssc)">
+          <circle cx="340" cy="240" r="228" fill="url(#sv)"/>
+          <circle cx="295" cy="200" r="130" fill="url(#sn1)"/>
+          <circle cx="410" cy="275" r="105" fill="url(#sn2)"/>
+          <circle className="rtw1" cx="248" cy="148" r="1.6" fill="#c8e8ff" opacity="0.85"/>
+          <circle className="rtw2" cx="285" cy="128" r="1.1" fill="#e0f4ff" opacity="0.65"/>
+          <circle className="rtw3" cx="432" cy="138" r="1.7" fill="#c8e8ff" opacity="0.75"/>
+          <circle className="rtw4" cx="462" cy="172" r="1.0" fill="#e0f4ff" opacity="0.55"/>
+          <circle className="rtw5" cx="232" cy="228" r="1.3" fill="#c8e8ff" opacity="0.65"/>
+          <circle className="rtw1" cx="464" cy="268" r="1.4" fill="#c8e8ff" opacity="0.70"/>
+          <circle className="rtw2" cx="262" cy="298" r="1.0" fill="#e0f4ff" opacity="0.45"/>
+          <circle className="rtw3" cx="445" cy="315" r="1.2" fill="#c8e8ff" opacity="0.55"/>
+          <circle className="rtw4" cx="298" cy="332" r="1.0" fill="#e0f4ff" opacity="0.50"/>
+          <circle className="rtw5" cx="376" cy="142" r="1.5" fill="#c8e8ff" opacity="0.65"/>
+          <circle className="rtw1" cx="210" cy="268" r="1.2" fill="#c8e8ff" opacity="0.55"/>
+          <circle className="rtw3" cx="325" cy="352" r="1.3" fill="#c8e8ff" opacity="0.60"/>
+          <circle className="rtw5" cx="215" cy="190" r="1.4" fill="#c8e8ff" opacity="0.65"/>
+        </g>
+
+        {/* spinning rings */}
+        <g className="rr1">
+          <circle cx="340" cy="240" r="215" fill="none" stroke="#00c8ff" strokeWidth="1" strokeOpacity="0.18" strokeDasharray="2 7"/>
+          <circle cx="340" cy="240" r="206" fill="none" stroke="#00c8ff" strokeWidth="0.6" strokeOpacity="0.12" strokeDasharray="1 9"/>
+          <g stroke="#00c8ff" strokeOpacity="0.55">
+            <line x1="340" y1="27"  x2="340" y2="42"  strokeWidth="2.2"/>
+            <line x1="340" y1="438" x2="340" y2="453" strokeWidth="2.2"/>
+            <line x1="127" y1="240" x2="142" y2="240" strokeWidth="2.2"/>
+            <line x1="538" y1="240" x2="553" y2="240" strokeWidth="2.2"/>
+          </g>
+        </g>
+        <g className="rr2">
+          <ellipse cx="340" cy="240" rx="140" ry="42" fill="none" stroke="#00c8ff" strokeWidth="0.9" strokeOpacity="0.28" strokeDasharray="4 6" transform="rotate(-10,340,240)"/>
+          <circle cx="340" cy="198" r="5" fill="#00eeff" opacity="0.95" transform="rotate(-10,340,240)"/>
+        </g>
+
+        {/* inner border */}
+        <circle cx="340" cy="240" r="185" fill="none" stroke="#00c8ff" strokeWidth="1.4" strokeOpacity="0.45"/>
+        <circle cx="340" cy="240" r="180" fill="none" stroke="#00c8ff" strokeWidth="0.5" strokeOpacity="0.18"/>
+
+        {/* arc text top — Reconfigurable Space Computing Lab */}
+        <path id="sarcTop" d="M 130,240 A 210,210 0 0,1 550,240" fill="none"/>
+        <text fontFamily="'Orbitron',Georgia,sans-serif" fontSize="15" fontWeight="700" fill="#00c8ff" letterSpacing="4" opacity="0.95">
+          <textPath href="#sarcTop" startOffset="7%">RECONFIGURABLE · SPACE · COMPUTING · LAB</textPath>
+        </text>
+
+        {/* arc text bottom — Cal Poly Pomona */}
+        <path id="sarcBot" d="M 148,240 A 192,192 0 0,0 532,240" fill="none"/>
+        <text fontFamily="'Orbitron',Georgia,sans-serif" fontSize="14" fontWeight="700" fill="#7ac8e8" letterSpacing="5" opacity="0.9">
+          <textPath href="#sarcBot" startOffset="13%">CAL POLY POMONA · EST. 1938</textPath>
+        </text>
+
+        {/* core glow */}
+        <circle cx="340" cy="240" r="135" fill="url(#scg)" className="rpc"/>
+
+        {/* source star */}
+        <circle cx="238" cy="228" r="36" fill="url(#ssg)"/>
+        <circle cx="238" cy="228" r="10" fill="#ffffff"/>
+        <g stroke="#ffe060" strokeLinecap="round" opacity="0.75">
+          <line x1="238" y1="212" x2="238" y2="200" strokeWidth="2"/>
+          <line x1="238" y1="244" x2="238" y2="256" strokeWidth="2"/>
+          <line x1="222" y1="228" x2="210" y2="228" strokeWidth="2"/>
+          <line x1="254" y1="228" x2="266" y2="228" strokeWidth="2"/>
+          <line x1="227" y1="217" x2="219" y2="209" strokeWidth="1.4"/>
+          <line x1="249" y1="239" x2="257" y2="247" strokeWidth="1.4"/>
+          <line x1="249" y1="217" x2="257" y2="209" strokeWidth="1.4"/>
+          <line x1="227" y1="239" x2="219" y2="247" strokeWidth="1.4"/>
+        </g>
+        <text x="238" y="276" textAnchor="middle" fontFamily="'Orbitron',monospace" fontSize="11" fill="#ffd060" letterSpacing="2" opacity="0.9">SOURCE</text>
+
+        {/* photon beam */}
+        <line x1="256" y1="228" x2="388" y2="230" className="rbm" stroke="#00eeff" strokeWidth="2.2" strokeLinecap="round"/>
+        <circle cx="322" cy="229" r="5.5" fill="#ffffff" opacity="0.95" filter="url(#sfg)"/>
+        <circle cx="322" cy="229" r="11"  fill="#00eeff" opacity="0.22"/>
+
+        {/* d/c = t label */}
+        <text x="322" y="214" textAnchor="middle" fontFamily="'Orbitron',monospace" fontSize="9" fill="#00c8ff" letterSpacing="2" opacity="0.6">d / c = t</text>
+
+        {/* Earth */}
+        <circle cx="430" cy="230" r="42" fill="url(#seg)"/>
+        <g clipPath="url(#sec)" opacity="0.85">
+          <ellipse cx="417" cy="218" rx="12" ry="7.5" fill="#2d8a48" transform="rotate(-20,417,218)"/>
+          <ellipse cx="436" cy="235" rx="14" ry="6.5" fill="#2d8a48" transform="rotate(15,436,235)"/>
+          <ellipse cx="413" cy="242" rx="8"  ry="5"   fill="#2d8a48" transform="rotate(-5,413,242)"/>
+          <ellipse cx="445" cy="218" rx="7"  ry="4"   fill="#2d8a48" transform="rotate(25,445,218)"/>
+        </g>
+        <circle cx="430" cy="230" r="42" fill="url(#sat)"/>
+        <circle cx="430" cy="230" r="47" fill="none" stroke="#4fc3f7" strokeWidth="3" strokeOpacity="0.22"/>
+        <text x="430" y="284" textAnchor="middle" fontFamily="'Orbitron',monospace" fontSize="11" fill="#4fc3f7" letterSpacing="2" opacity="0.9">OBSERVER</text>
+
+        {/* RSCL@CPP center bottom */}
+        <line x1="220" y1="326" x2="460" y2="326" stroke="#00c8ff" strokeWidth="0.8" strokeOpacity="0.4"/>
+        <text x="340" y="322" textAnchor="middle" fontFamily="'Orbitron',Georgia,sans-serif" fontSize="30" fontWeight="900" fill="#00eeff" letterSpacing="4" opacity="1">RSCL@CPP</text>
+        <line x1="220" y1="336" x2="460" y2="336" stroke="#00c8ff" strokeWidth="0.8" strokeOpacity="0.4"/>
+        <text x="340" y="354" textAnchor="middle" fontFamily="'Orbitron',monospace" fontSize="9" fill="#4a8aaa" letterSpacing="4" opacity="0.85">EARTH LOOKBACK SIMULATOR</text>
+      </svg>
+    </div>
   );
 }
 
@@ -425,7 +415,6 @@ export default function App() {
   const [mPla, setMPla] = useState("Mars");
   const [mDist, setMDist] = useState("12.5");
   const [mUnit, setMUnit] = useState("light-minutes");
-
   const [ageEv, setAgeEv] = useState("25");
   const [lspan, setLspan] = useState("80");
   const [autoTime, setAutoTime] = useState(true);
@@ -435,7 +424,6 @@ export default function App() {
   const [obsT, setObsT] = useState(new Date().toISOString().slice(11, 16));
   const [clipV, setClipV] = useState("30");
   const [clipU, setClipU] = useState("seconds");
-
   const [mediaURL, setMediaURL] = useState(null);
   const [mediaType, setMediaType] = useState(null);
   const [mediaName, setMediaName] = useState("");
@@ -461,45 +449,24 @@ export default function App() {
 
   useEffect(() => {
     if (!playing) {
-      playR.current = false;
-      cancelAnimationFrame(rafR.current);
-      lastT.current = null;
-      return;
+      playR.current = false; cancelAnimationFrame(rafR.current); lastT.current = null; return;
     }
     playR.current = true;
     const tick = now => {
       if (!playR.current) return;
       if (lastT.current === null) lastT.current = now;
-      const dt = (now - lastT.current) / 1000;
-      lastT.current = now;
+      const dt = (now - lastT.current) / 1000; lastT.current = now;
       const next = Math.min(progR.current + dt * spdR.current * 0.032, 1);
-      progR.current = next;
-      setProg(next);
-      if (next >= 1) {
-        playR.current = false;
-        setPlaying(false);
-        return;
-      }
+      progR.current = next; setProg(next);
+      if (next >= 1) { playR.current = false; setPlaying(false); return; }
       rafR.current = requestAnimationFrame(tick);
     };
     rafR.current = requestAnimationFrame(tick);
-    return () => {
-      playR.current = false;
-      cancelAnimationFrame(rafR.current);
-    };
+    return () => { playR.current = false; cancelAnimationFrame(rafR.current); };
   }, [playing]);
 
   const target = manualMode
-    ? {
-        galaxy: mGal,
-        system: mSys,
-        planet: mPla,
-        color: "#80cbc4",
-        status: "Manual",
-        notes: "User-supplied distance.",
-        disc_year: NaN,
-        _distanceLY: toDistanceLY(parseFloat(mDist) || 0, mUnit)
-      }
+    ? { galaxy:mGal, system:mSys, planet:mPla, color:"#80cbc4", status:"Manual", notes:"User-supplied distance.", disc_year:NaN, _distanceLY:toDistanceLY(parseFloat(mDist)||0, mUnit) }
     : TARGETS[tIdx];
 
   const distanceLY = target._distanceLY != null ? target._distanceLY : target.distance_pc * PC_TO_LY;
@@ -511,22 +478,19 @@ export default function App() {
   const obsDT = new Date(obsD + "T" + (obsT || "00:00") + ":00Z");
   const evDT = autoTime ? addSec(obsDT, -delaySec) : new Date(evD + "T" + (evT || "00:00") + ":00Z");
   const arrStart = addSec(evDT, delaySec);
-  const clipSec = videoDur > 0 ? videoDur : (parseFloat(clipV) || 0) * ({ seconds: 1, minutes: 60, hours: 3600, days: 86400, years: SPY }[clipU] || 1);
+  const clipSec = videoDur > 0 ? videoDur : (parseFloat(clipV)||0) * ({seconds:1,minutes:60,hours:3600,days:86400,years:SPY}[clipU]||1);
   const arrEnd = addSec(arrStart, clipSec);
 
   const age0 = parseFloat(ageEv) || 0;
   const ls = parseFloat(lspan) || 80;
-
   const simProg = Math.max(0, Math.min(1, prog));
   const simTravelSec = delaySec * simProg;
   const simDT = addSec(evDT, simTravelSec);
   const arrivedOnEarth = simProg >= 1;
-
   const apparentAge = arrivedOnEarth ? age0 : NaN;
   const actualNow = age0 + secToYr(simTravelSec);
   const ageWhenSeen = age0 + delayYears;
   const hiddenByDelayNow = actualNow - age0;
-
   const aliveWhenSeen = ageWhenSeen < ls;
   const aliveNow = actualNow < ls;
 
@@ -537,11 +501,7 @@ export default function App() {
   useEffect(() => {
     const v = videoRcvRef.current;
     if (!v || mediaType !== "video") return;
-    if (!arrivedOnEarth) {
-      v.currentTime = 0;
-      v.pause();
-      return;
-    }
+    if (!arrivedOnEarth) { v.currentTime = 0; v.pause(); return; }
     v.currentTime = 0;
   }, [arrivedOnEarth, mediaType]);
 
@@ -549,71 +509,37 @@ export default function App() {
     if (!file) return;
     if (mediaURL) URL.revokeObjectURL(mediaURL);
     const url = URL.createObjectURL(file);
-    setMediaURL(url);
-    setMediaName(file.name);
+    setMediaURL(url); setMediaName(file.name);
     const isVid = file.type.startsWith("video");
-    setMediaType(isVid ? "video" : "image");
-    setVideoDur(0);
+    setMediaType(isVid ? "video" : "image"); setVideoDur(0);
     if (isVid) {
-      const tmp = document.createElement("video");
-      tmp.src = url;
-      tmp.onloadedmetadata = () => {
-        setVideoDur(tmp.duration);
-        setClipV(Math.round(tmp.duration).toString());
-        setClipU("seconds");
-      };
+      const tmp = document.createElement("video"); tmp.src = url;
+      tmp.onloadedmetadata = () => { setVideoDur(tmp.duration); setClipV(Math.round(tmp.duration).toString()); setClipU("seconds"); };
     }
   }, [mediaURL]);
 
   const handlePP = () => {
-    if (prog >= 1) {
-      setProg(0);
-      progR.current = 0;
-    }
-    setPlaying(p => !p);
-    lastT.current = null;
+    if (prog >= 1) { setProg(0); progR.current = 0; }
+    setPlaying(p => !p); lastT.current = null;
   };
+  const handleProg = v => { setProg(v); progR.current = v; };
 
-  const handleProg = v => {
-    setProg(v);
-    progR.current = v;
-  };
-
-  const accent = "#00c8ff";
-  const panel = "rgba(4,18,38,0.96)";
-  const border = "rgba(0,180,255,0.22)";
-  const dim = "#6a8aaa";
-  const bright = "#e8f4ff";
-  const textCol = "#c8dff0";
-  const ok = "#00e87a";
-  const danger = "#ff5f5f";
-  const warn = "#f5c842";
-
-  const inp = {
-    background: "rgba(0,12,34,0.9)",
-    border: "1px solid " + border,
-    borderRadius: 8,
-    padding: "12px 16px",
-    color: textCol,
-    fontSize: 17,
-    fontFamily: "'IBM Plex Mono',monospace",
-    outline: "none",
-    width: "100%"
-  };
-  const sel = { ...inp, appearance: "none", cursor: "pointer" };
+  const accent="#00c8ff",panel="rgba(4,18,38,0.96)",border="rgba(0,180,255,0.22)",dim="#6a8aaa",bright="#e8f4ff",textCol="#c8dff0",ok="#00e87a",danger="#ff5f5f",warn="#f5c842";
+  const inp = { background:"rgba(0,12,34,0.9)", border:"1px solid "+border, borderRadius:8, padding:"12px 16px", color:textCol, fontSize:17, fontFamily:"'IBM Plex Mono',monospace", outline:"none", width:"100%" };
+  const sel = { ...inp, appearance:"none", cursor:"pointer" };
 
   const StepLabel = ({ n, text }) => (
-    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-      <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(0,200,255,0.15)", border: "2px solid " + accent, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "monospace", fontSize: 15, fontWeight: 700, color: accent, flexShrink: 0 }}>{n}</div>
-      <div style={{ fontFamily: "'Orbitron',sans-serif", fontSize: 13, color: accent, letterSpacing: 3, textTransform: "uppercase", fontWeight: 700 }}>{text}</div>
+    <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:16 }}>
+      <div style={{ width:32, height:32, borderRadius:"50%", background:"rgba(0,200,255,0.15)", border:"2px solid "+accent, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"monospace", fontSize:15, fontWeight:700, color:accent, flexShrink:0 }}>{n}</div>
+      <div style={{ fontFamily:"'Orbitron',sans-serif", fontSize:13, color:accent, letterSpacing:3, textTransform:"uppercase", fontWeight:700 }}>{text}</div>
     </div>
   );
 
   const InfoCard = ({ label, value, color, sub }) => (
-    <div style={{ background: "rgba(0,200,255,0.06)", border: "1px solid " + border, borderRadius: 10, padding: "14px 18px" }}>
-      <div style={{ fontSize: 12, color: dim, textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 6 }}>{label}</div>
-      <div style={{ fontSize: 22, fontWeight: 700, color: color || accent, fontFamily: "'IBM Plex Mono',monospace", lineHeight: 1.2 }}>{value}</div>
-      {sub && <div style={{ fontSize: 13, color: dim, marginTop: 6, lineHeight: 1.5 }}>{sub}</div>}
+    <div style={{ background:"rgba(0,200,255,0.06)", border:"1px solid "+border, borderRadius:10, padding:"14px 18px" }}>
+      <div style={{ fontSize:12, color:dim, textTransform:"uppercase", letterSpacing:1.5, marginBottom:6 }}>{label}</div>
+      <div style={{ fontSize:22, fontWeight:700, color:color||accent, fontFamily:"'IBM Plex Mono',monospace", lineHeight:1.2 }}>{value}</div>
+      {sub && <div style={{ fontSize:13, color:dim, marginTop:6, lineHeight:1.5 }}>{sub}</div>}
     </div>
   );
 
@@ -621,125 +547,92 @@ export default function App() {
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #020811; color: ${textCol}; font-family: 'IBM Plex Mono', monospace; font-size: 16px; line-height: 1.65; min-height: 100vh; }
-        h1, h2, h3 { font-family: 'Orbitron', sans-serif; }
-        select option { background: #020811; color: ${textCol}; }
-        input[type=date], input[type=time] {
-          background: rgba(0,12,34,0.9);
-          color: ${textCol};
-          border: 1px solid ${border};
-          border-radius: 8px;
-          padding: 12px 16px;
-          outline: none;
-          width: 100%;
-          font-size: 17px;
-          font-family: 'IBM Plex Mono', monospace;
-          color-scheme: dark;
-        }
-        input[type=range] {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 100%;
-          height: 8px;
-          border-radius: 4px;
-          background: rgba(0,180,255,0.18);
-          outline: none;
-          cursor: pointer;
-        }
-        input[type=range]::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          background: ${accent};
-          border: 3px solid #fff;
-          cursor: pointer;
-          box-shadow: 0 0 12px ${accent}99;
-        }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,180,255,0.25); border-radius: 3px; }
-        @keyframes fadein { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-        @keyframes glow { 0%,100% { box-shadow: 0 0 20px rgba(0,232,122,0.3); } 50% { box-shadow: 0 0 40px rgba(0,232,122,0.6); } }
-        .fadein { animation: fadein 0.5s ease; }
-        .step { background: ${panel}; border: 1px solid ${border}; border-radius: 16px; padding: 28px 30px; margin-bottom: 20px; }
-        .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-        .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
-        @media (max-width: 700px) { .g2, .g3 { grid-template-columns: 1fr; } }
-        details > summary { list-style: none; cursor: pointer; }
-        details > summary::-webkit-details-marker { display: none; }
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+        body{background:#020811;color:${textCol};font-family:'IBM Plex Mono',monospace;font-size:16px;line-height:1.65;min-height:100vh;}
+        h1,h2,h3{font-family:'Orbitron',sans-serif;}
+        select option{background:#020811;color:${textCol};}
+        input[type=date],input[type=time]{background:rgba(0,12,34,0.9);color:${textCol};border:1px solid ${border};border-radius:8px;padding:12px 16px;outline:none;width:100%;font-size:17px;font-family:'IBM Plex Mono',monospace;color-scheme:dark;}
+        input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:8px;border-radius:4px;background:rgba(0,180,255,0.18);outline:none;cursor:pointer;}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:${accent};border:3px solid #fff;cursor:pointer;box-shadow:0 0 12px ${accent}99;}
+        ::-webkit-scrollbar{width:6px;}::-webkit-scrollbar-thumb{background:rgba(0,180,255,0.25);border-radius:3px;}
+        @keyframes fadein{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+        @keyframes glow{0%,100%{box-shadow:0 0 20px rgba(0,232,122,0.3)}50%{box-shadow:0 0 40px rgba(0,232,122,0.6)}}
+        .fadein{animation:fadein 0.5s ease;}
+        .step{background:${panel};border:1px solid ${border};border-radius:16px;padding:28px 30px;margin-bottom:20px;}
+        .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+        .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+        @media(max-width:700px){.g2,.g3{grid-template-columns:1fr;}}
+        details>summary{list-style:none;cursor:pointer;}
+        details>summary::-webkit-details-marker{display:none;}
       `}</style>
 
       <StarField />
 
-      <div style={{ position: "relative", zIndex: 1, maxWidth: 900, margin: "0 auto", padding: "40px 20px 100px" }}>
+      <div style={{ position:"relative", zIndex:1, maxWidth:900, margin:"0 auto", padding:"40px 20px 100px" }}>
 
-        <div style={{ textAlign: "center", marginBottom: 40 }}>
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}><RSCLSeal size={140} /></div>
-          <div style={{ fontSize: 13, letterSpacing: 5, color: dim, textTransform: "uppercase", marginBottom: 10 }}>
+        {/* ── HEADER ── */}
+        <div style={{ textAlign:"center", marginBottom:40 }}>
+          <div style={{ display:"flex", justifyContent:"center", marginBottom:20 }}>
+            <RSCLSeal size={260} />
+          </div>
+          <div style={{ fontSize:13, letterSpacing:5, color:dim, textTransform:"uppercase", marginBottom:10 }}>
             Reconfigurable Space Computing Lab · Cal Poly Pomona
           </div>
-          <h1 style={{ fontSize: "clamp(32px,6vw,56px)", fontWeight: 900, color: "#fff", textShadow: "0 0 60px " + accent + "55", lineHeight: 1.0, marginBottom: 6 }}>
+          <h1 style={{ fontSize:"clamp(32px,6vw,56px)", fontWeight:900, color:"#fff", textShadow:"0 0 60px "+accent+"55", lineHeight:1.0, marginBottom:6 }}>
             EARTH LOOKBACK
           </h1>
-          <h2 style={{ fontSize: "clamp(15px,3vw,24px)", fontWeight: 600, color: accent, letterSpacing: 12, marginBottom: 16 }}>
+          <h2 style={{ fontSize:"clamp(15px,3vw,24px)", fontWeight:600, color:accent, letterSpacing:12, marginBottom:16 }}>
             SIMULATOR
           </h2>
-          <p style={{ color: dim, fontSize: 17, lineHeight: 1.8, maxWidth: 540, margin: "0 auto" }}>
+          <p style={{ color:dim, fontSize:17, lineHeight:1.8, maxWidth:540, margin:"0 auto" }}>
             Choose a real exoplanet, upload a photo or video, and watch your signal travel across the cosmos to Earth.
           </p>
         </div>
 
+        {/* ── STEP 1 ── */}
         <div className="step">
           <StepLabel n="1" text="Choose Your World" />
-
-          <div style={{ display: "flex", gap: 8, marginBottom: 18, flexWrap: "wrap" }}>
-            <button onClick={() => setManualMode(false)} style={{ padding: "9px 18px", borderRadius: 8, border: "none", background: !manualMode ? accent : "rgba(0,180,255,0.09)", color: !manualMode ? "#000" : dim, fontFamily: "monospace", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
-              Catalog
-            </button>
-            <button onClick={() => setManualMode(true)} style={{ padding: "9px 18px", borderRadius: 8, border: "none", background: manualMode ? accent : "rgba(0,180,255,0.09)", color: manualMode ? "#000" : dim, fontFamily: "monospace", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
-              Manual Entry
-            </button>
+          <div style={{ display:"flex", gap:8, marginBottom:18, flexWrap:"wrap" }}>
+            <button onClick={() => setManualMode(false)} style={{ padding:"9px 18px", borderRadius:8, border:"none", background:!manualMode?accent:"rgba(0,180,255,0.09)", color:!manualMode?"#000":dim, fontFamily:"monospace", fontSize:14, fontWeight:700, cursor:"pointer" }}>Catalog</button>
+            <button onClick={() => setManualMode(true)}  style={{ padding:"9px 18px", borderRadius:8, border:"none", background:manualMode?accent:"rgba(0,180,255,0.09)",  color:manualMode?"#000":dim,  fontFamily:"monospace", fontSize:14, fontWeight:700, cursor:"pointer" }}>Manual Entry</button>
           </div>
 
           {!manualMode ? (
             <>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 10, marginBottom: 18 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(180px,1fr))", gap:10, marginBottom:18 }}>
                 {TARGETS.map((t, i) => (
-                  <button key={i} onClick={() => { setTIdx(i); setProg(0); setPlaying(false); progR.current = 0; }}
-                    style={{ padding: "12px 14px", borderRadius: 10, border: "2px solid " + (tIdx === i ? t.color : "rgba(0,180,255,0.15)"), background: tIdx === i ? "rgba(0,200,255,0.1)" : "rgba(0,10,30,0.6)", cursor: "pointer", textAlign: "left", transition: "all 0.15s" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                      <div style={{ width: 11, height: 11, borderRadius: "50%", background: t.color, boxShadow: "0 0 7px " + t.color, flexShrink: 0 }} />
-                      <span style={{ fontSize: 14, fontWeight: 700, color: tIdx === i ? t.color : bright, fontFamily: "monospace" }}>{t.planet}</span>
+                  <button key={i} onClick={() => { setTIdx(i); setProg(0); setPlaying(false); progR.current=0; }}
+                    style={{ padding:"12px 14px", borderRadius:10, border:"2px solid "+(tIdx===i?t.color:"rgba(0,180,255,0.15)"), background:tIdx===i?"rgba(0,200,255,0.1)":"rgba(0,10,30,0.6)", cursor:"pointer", textAlign:"left", transition:"all 0.15s" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
+                      <div style={{ width:11, height:11, borderRadius:"50%", background:t.color, boxShadow:"0 0 7px "+t.color, flexShrink:0 }}/>
+                      <span style={{ fontSize:14, fontWeight:700, color:tIdx===i?t.color:bright, fontFamily:"monospace" }}>{t.planet}</span>
                     </div>
-                    <div style={{ fontSize: 12, color: dim }}>{t.system}</div>
-                    <div style={{ fontSize: 12, color: tIdx === i ? accent : dim, marginTop: 2 }}>
-                      {fmtDelay(t.distance_pc * PC_TO_LY)}
-                    </div>
-                    {t.status.includes("⚠") && <div style={{ fontSize: 11, color: warn, marginTop: 3 }}>⚠ Controversial</div>}
+                    <div style={{ fontSize:12, color:dim }}>{t.system}</div>
+                    <div style={{ fontSize:12, color:tIdx===i?accent:dim, marginTop:2 }}>{fmtDelay(t.distance_pc*PC_TO_LY)}</div>
+                    {t.status.includes("⚠") && <div style={{ fontSize:11, color:warn, marginTop:3 }}>⚠ Controversial</div>}
                   </button>
                 ))}
               </div>
-              <div style={{ padding: "14px 18px", background: "rgba(0,200,255,0.05)", border: "1px solid " + border, borderRadius: 10, fontSize: 15, color: dim, lineHeight: 1.7 }}>
-                <span style={{ color: bright, fontWeight: 600 }}>{target.planet}</span> · {target.galaxy} · <span style={{ color: accent }}>{fmtDelay(distanceLY)} away</span>
+              <div style={{ padding:"14px 18px", background:"rgba(0,200,255,0.05)", border:"1px solid "+border, borderRadius:10, fontSize:15, color:dim, lineHeight:1.7 }}>
+                <span style={{ color:bright, fontWeight:600 }}>{target.planet}</span> · {target.galaxy} · <span style={{ color:accent }}>{fmtDelay(distanceLY)} away</span>
                 {target.disc_year && !isNaN(target.disc_year) && <span> · Discovered {target.disc_year}</span>}
-                <br />{target.notes}
+                <br/>{target.notes}
               </div>
             </>
           ) : (
             <div className="g2">
-              {[["Galaxy", mGal, setMGal], ["System / Star", mSys, setMSys], ["Planet / Target", mPla, setMPla]].map(([l, v, s]) => (
+              {[["Galaxy",mGal,setMGal],["System / Star",mSys,setMSys],["Planet / Target",mPla,setMPla]].map(([l,v,s]) => (
                 <div key={l}>
-                  <div style={{ fontSize: 13, color: dim, marginBottom: 6, letterSpacing: 1, textTransform: "uppercase" }}>{l}</div>
-                  <input value={v} onChange={e => s(e.target.value)} style={inp} />
+                  <div style={{ fontSize:13, color:dim, marginBottom:6, letterSpacing:1, textTransform:"uppercase" }}>{l}</div>
+                  <input value={v} onChange={e=>s(e.target.value)} style={inp}/>
                 </div>
               ))}
               <div>
-                <div style={{ fontSize: 13, color: dim, marginBottom: 6, letterSpacing: 1, textTransform: "uppercase" }}>Distance</div>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <input type="number" value={mDist} onChange={e => setMDist(e.target.value)} min="0" step="0.1" style={{ ...inp, width: "50%" }} />
-                  <select value={mUnit} onChange={e => setMUnit(e.target.value)} style={{ ...sel, width: "50%" }}>
-                    {["light-minutes", "light-hours", "light-days", "light-years", "parsecs"].map(u => <option key={u}>{u}</option>)}
+                <div style={{ fontSize:13, color:dim, marginBottom:6, letterSpacing:1, textTransform:"uppercase" }}>Distance</div>
+                <div style={{ display:"flex", gap:8 }}>
+                  <input type="number" value={mDist} onChange={e=>setMDist(e.target.value)} min="0" step="0.1" style={{ ...inp, width:"50%" }}/>
+                  <select value={mUnit} onChange={e=>setMUnit(e.target.value)} style={{ ...sel, width:"50%" }}>
+                    {["light-minutes","light-hours","light-days","light-years","parsecs"].map(u=><option key={u}>{u}</option>)}
                   </select>
                 </div>
               </div>
@@ -747,190 +640,149 @@ export default function App() {
           )}
         </div>
 
+        {/* ── STEP 2 ── */}
         <div className="step">
           <StepLabel n="2" text="Your Event" />
-
-          <div
-            onClick={() => fileRef.current && fileRef.current.click()}
-            style={{ border: "2px dashed " + (mediaURL ? "rgba(0,232,122,0.5)" : border), borderRadius: 12, padding: "24px", textAlign: "center", cursor: "pointer", background: mediaURL ? "rgba(0,232,122,0.04)" : "rgba(0,10,30,0.5)", marginBottom: 20, transition: "all 0.2s" }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = accent; e.currentTarget.style.background = "rgba(0,200,255,0.06)"; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = mediaURL ? "rgba(0,232,122,0.5)" : border; e.currentTarget.style.background = mediaURL ? "rgba(0,232,122,0.04)" : "rgba(0,10,30,0.5)"; }}
-          >
+          <div onClick={() => fileRef.current && fileRef.current.click()}
+            style={{ border:"2px dashed "+(mediaURL?"rgba(0,232,122,0.5)":border), borderRadius:12, padding:"24px", textAlign:"center", cursor:"pointer", background:mediaURL?"rgba(0,232,122,0.04)":"rgba(0,10,30,0.5)", marginBottom:20, transition:"all 0.2s" }}
+            onMouseEnter={e=>{e.currentTarget.style.borderColor=accent;e.currentTarget.style.background="rgba(0,200,255,0.06)";}}
+            onMouseLeave={e=>{e.currentTarget.style.borderColor=mediaURL?"rgba(0,232,122,0.5)":border;e.currentTarget.style.background=mediaURL?"rgba(0,232,122,0.04)":"rgba(0,10,30,0.5)";}}>
             {mediaURL ? (
               <div>
-                <div style={{ fontSize: 28, marginBottom: 6 }}>{mediaType === "video" ? "🎬" : "🖼️"}</div>
-                <div style={{ fontSize: 16, color: ok, fontWeight: 600, marginBottom: 4 }}>✓  {mediaName}</div>
-                <div style={{ fontSize: 14, color: dim }}>
-                  {mediaType === "video" && videoDur > 0 ? "Duration: " + videoDur.toFixed(1) + "s — " : ""}
-                  Click to change
-                </div>
+                <div style={{ fontSize:28, marginBottom:6 }}>{mediaType==="video"?"🎬":"🖼️"}</div>
+                <div style={{ fontSize:16, color:ok, fontWeight:600, marginBottom:4 }}>✓  {mediaName}</div>
+                <div style={{ fontSize:14, color:dim }}>{mediaType==="video"&&videoDur>0?"Duration: "+videoDur.toFixed(1)+"s — ":""}Click to change</div>
               </div>
             ) : (
               <div>
-                <div style={{ fontSize: 36, marginBottom: 8 }}>📷</div>
-                <div style={{ fontSize: 17, color: bright, fontWeight: 600, marginBottom: 6 }}>Upload your image or video</div>
-                <div style={{ fontSize: 15, color: dim }}>This is what you're sending from {target.planet} — watch it travel to Earth</div>
+                <div style={{ fontSize:36, marginBottom:8 }}>📷</div>
+                <div style={{ fontSize:17, color:bright, fontWeight:600, marginBottom:6 }}>Upload your image or video</div>
+                <div style={{ fontSize:15, color:dim }}>This is what you're sending from {target.planet} — watch it travel to Earth</div>
               </div>
             )}
           </div>
-          <input ref={fileRef} type="file" accept="image/*,video/mp4,video/webm,video/ogg" style={{ display: "none" }} onChange={e => handleMedia(e.target.files[0])} />
+          <input ref={fileRef} type="file" accept="image/*,video/mp4,video/webm,video/ogg" style={{ display:"none" }} onChange={e=>handleMedia(e.target.files[0])}/>
 
-          <div className="g2" style={{ marginBottom: 14 }}>
+          <div className="g2" style={{ marginBottom:14 }}>
             <div>
-              <div style={{ fontSize: 13, color: dim, marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>Person's age at this event</div>
-              <input type="number" value={ageEv} onChange={e => setAgeEv(e.target.value)} min="0" step="1" style={inp} />
+              <div style={{ fontSize:13, color:dim, marginBottom:6, textTransform:"uppercase", letterSpacing:1 }}>Person's age at this event</div>
+              <input type="number" value={ageEv} onChange={e=>setAgeEv(e.target.value)} min="0" step="1" style={inp}/>
             </div>
             <div>
-              <div style={{ fontSize: 13, color: dim, marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>Expected lifespan (years)</div>
-              <input type="number" value={lspan} onChange={e => setLspan(e.target.value)} min="1" step="1" style={inp} />
+              <div style={{ fontSize:13, color:dim, marginBottom:6, textTransform:"uppercase", letterSpacing:1 }}>Expected lifespan (years)</div>
+              <input type="number" value={lspan} onChange={e=>setLspan(e.target.value)} min="1" step="1" style={inp}/>
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-            <button onClick={() => setAutoTime(true)} style={{ flex: 1, padding: "10px", borderRadius: 8, border: "none", background: autoTime ? accent : "rgba(0,180,255,0.09)", color: autoTime ? "#000" : dim, fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
-              Auto timing
-            </button>
-            <button onClick={() => setAutoTime(false)} style={{ flex: 1, padding: "10px", borderRadius: 8, border: "none", background: !autoTime ? accent : "rgba(0,180,255,0.09)", color: !autoTime ? "#000" : dim, fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
-              Set event date
-            </button>
+          <div style={{ display:"flex", gap:8, marginBottom:14 }}>
+            <button onClick={()=>setAutoTime(true)}  style={{ flex:1, padding:"10px", borderRadius:8, border:"none", background:autoTime?accent:"rgba(0,180,255,0.09)",  color:autoTime?"#000":dim,  fontSize:15, fontWeight:700, cursor:"pointer" }}>Auto timing</button>
+            <button onClick={()=>setAutoTime(false)} style={{ flex:1, padding:"10px", borderRadius:8, border:"none", background:!autoTime?accent:"rgba(0,180,255,0.09)", color:!autoTime?"#000":dim, fontSize:15, fontWeight:700, cursor:"pointer" }}>Set event date</button>
           </div>
 
           {autoTime ? (
-            <div style={{ padding: "12px 16px", background: "rgba(0,232,122,0.07)", border: "1px solid rgba(0,232,122,0.25)", borderRadius: 8, fontSize: 15, color: ok }}>
+            <div style={{ padding:"12px 16px", background:"rgba(0,232,122,0.07)", border:"1px solid rgba(0,232,122,0.25)", borderRadius:8, fontSize:15, color:ok }}>
               ✓ Auto mode — event is set so the signal arrives at Earth right now ({fmtDT(obsDT)})
             </div>
           ) : (
             <div className="g2">
-              <div><div style={{ fontSize: 13, color: dim, marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>Event date at {target.planet}</div><input type="date" value={evD} onChange={e => setEvD(e.target.value)} /></div>
-              <div><div style={{ fontSize: 13, color: dim, marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>Event time (UTC)</div><input type="time" value={evT} onChange={e => setEvT(e.target.value)} /></div>
+              <div><div style={{ fontSize:13, color:dim, marginBottom:6, textTransform:"uppercase", letterSpacing:1 }}>Event date at {target.planet}</div><input type="date" value={evD} onChange={e=>setEvD(e.target.value)}/></div>
+              <div><div style={{ fontSize:13, color:dim, marginBottom:6, textTransform:"uppercase", letterSpacing:1 }}>Event time (UTC)</div><input type="time" value={evT} onChange={e=>setEvT(e.target.value)}/></div>
             </div>
           )}
 
           {mediaType !== "video" && (
-            <div className="g2" style={{ marginTop: 14 }}>
-              <div>
-                <div style={{ fontSize: 13, color: dim, marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>Earth observation date</div>
-                <input type="date" value={obsD} onChange={e => setObsD(e.target.value)} />
-              </div>
-              <div>
-                <div style={{ fontSize: 13, color: dim, marginBottom: 6, textTransform: "uppercase", letterSpacing: 1 }}>Earth observation time (UTC)</div>
-                <input type="time" value={obsT} onChange={e => setObsT(e.target.value)} />
-              </div>
+            <div className="g2" style={{ marginTop:14 }}>
+              <div><div style={{ fontSize:13, color:dim, marginBottom:6, textTransform:"uppercase", letterSpacing:1 }}>Earth observation date</div><input type="date" value={obsD} onChange={e=>setObsD(e.target.value)}/></div>
+              <div><div style={{ fontSize:13, color:dim, marginBottom:6, textTransform:"uppercase", letterSpacing:1 }}>Earth observation time (UTC)</div><input type="time" value={obsT} onChange={e=>setObsT(e.target.value)}/></div>
             </div>
           )}
         </div>
 
-        <div style={{ background: "rgba(1,4,16,0.98)", border: "1px solid " + border, borderRadius: 18, overflow: "hidden", marginBottom: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 24px", background: "rgba(0,15,45,0.9)", borderBottom: "1px solid " + border }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 10, height: 10, borderRadius: "50%", background: target.color, boxShadow: "0 0 8px " + target.color }} />
-              <span style={{ fontFamily: "'Orbitron',sans-serif", fontSize: 13, color: accent, letterSpacing: 3, fontWeight: 700 }}>STEP 3 — WATCH THE SIGNAL TRAVEL</span>
+        {/* ── STEP 3 — CANVAS ── */}
+        <div style={{ background:"rgba(1,4,16,0.98)", border:"1px solid "+border, borderRadius:18, overflow:"hidden", marginBottom:20 }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"13px 24px", background:"rgba(0,15,45,0.9)", borderBottom:"1px solid "+border }}>
+            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+              <div style={{ width:10, height:10, borderRadius:"50%", background:target.color, boxShadow:"0 0 8px "+target.color }}/>
+              <span style={{ fontFamily:"'Orbitron',sans-serif", fontSize:13, color:accent, letterSpacing:3, fontWeight:700 }}>STEP 3 — WATCH THE SIGNAL TRAVEL</span>
             </div>
-            <span style={{ fontSize: 14, color: dim }}>{target.planet}  →  Earth</span>
+            <span style={{ fontSize:14, color:dim }}>{target.planet}  →  Earth</span>
           </div>
 
-          <canvas ref={canvasRef} width={900} height={220} style={{ width: "100%", height: 220, display: "block" }} />
+          <canvas ref={canvasRef} width={900} height={220} style={{ width:"100%", height:220, display:"block" }}/>
 
-          <div style={{ padding: "18px 24px", background: "rgba(0,6,22,0.95)", borderTop: "1px solid " + border }}>
-            <div style={{ marginBottom: 14 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                <span style={{ fontSize: 14, color: dim }}>Emitted from {target.planet}</span>
-                <span style={{ fontSize: 16, color: accent, fontWeight: 700 }}>
-                  {(prog * 100).toFixed(1)}%  ·  {fmtDelay(distanceLY * Math.max(prog, 0.00001))} of {fmtDelay(distanceLY)}
-                </span>
-                <span style={{ fontSize: 14, color: dim }}>Received on Earth</span>
+          <div style={{ padding:"18px 24px", background:"rgba(0,6,22,0.95)", borderTop:"1px solid "+border }}>
+            <div style={{ marginBottom:14 }}>
+              <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
+                <span style={{ fontSize:14, color:dim }}>Emitted from {target.planet}</span>
+                <span style={{ fontSize:16, color:accent, fontWeight:700 }}>{(prog*100).toFixed(1)}%  ·  {fmtDelay(distanceLY*Math.max(prog,0.00001))} of {fmtDelay(distanceLY)}</span>
+                <span style={{ fontSize:14, color:dim }}>Received on Earth</span>
               </div>
-              <input type="range" min={0} max={1} step={0.0005} value={prog} onChange={e => handleProg(parseFloat(e.target.value))} />
-              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
-                {["0%", "25%", "50%", "75%", "100%"].map(l => <span key={l} style={{ fontSize: 12, color: "rgba(0,180,255,0.3)" }}>{l}</span>)}
+              <input type="range" min={0} max={1} step={0.0005} value={prog} onChange={e=>handleProg(parseFloat(e.target.value))}/>
+              <div style={{ display:"flex", justifyContent:"space-between", marginTop:5 }}>
+                {["0%","25%","50%","75%","100%"].map(l=><span key={l} style={{ fontSize:12, color:"rgba(0,180,255,0.3)" }}>{l}</span>)}
               </div>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              <button onClick={() => handleProg(0)} style={{ padding: "9px 18px", background: "rgba(0,180,255,0.08)", border: "1px solid " + border, borderRadius: 8, color: dim, fontSize: 15, cursor: "pointer" }}>⏮ Reset</button>
-              <button onClick={handlePP} style={{ padding: "10px 30px", background: playing ? "rgba(0,232,122,0.15)" : "rgba(0,200,255,0.15)", border: "2px solid " + (playing ? "rgba(0,232,122,0.5)" : accent), borderRadius: 8, color: playing ? ok : accent, fontFamily: "monospace", fontSize: 17, letterSpacing: 2, fontWeight: 800, cursor: "pointer" }}>
-                {playing ? "⏸  PAUSE" : "▶  PLAY"}
+            <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" }}>
+              <button onClick={()=>handleProg(0)} style={{ padding:"9px 18px", background:"rgba(0,180,255,0.08)", border:"1px solid "+border, borderRadius:8, color:dim, fontSize:15, cursor:"pointer" }}>⏮ Reset</button>
+              <button onClick={handlePP} style={{ padding:"10px 30px", background:playing?"rgba(0,232,122,0.15)":"rgba(0,200,255,0.15)", border:"2px solid "+(playing?"rgba(0,232,122,0.5)":accent), borderRadius:8, color:playing?ok:accent, fontFamily:"monospace", fontSize:17, letterSpacing:2, fontWeight:800, cursor:"pointer" }}>
+                {playing?"⏸  PAUSE":"▶  PLAY"}
               </button>
-              <button onClick={() => handleProg(1)} style={{ padding: "9px 18px", background: "rgba(0,180,255,0.08)", border: "1px solid " + border, borderRadius: 8, color: dim, fontSize: 15, cursor: "pointer" }}>⏭ Arrive</button>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: "auto" }}>
-                <span style={{ fontSize: 14, color: dim }}>Speed:</span>
-                {[0.5, 1, 2, 5, 10].map(s => (
-                  <button key={s} onClick={() => setSpd(s)} style={{ padding: "7px 12px", borderRadius: 7, fontSize: 14, cursor: "pointer", border: "1px solid " + (spd === s ? accent : border), background: spd === s ? "rgba(0,200,255,0.2)" : "rgba(0,180,255,0.05)", color: spd === s ? accent : dim }}>
-                    {s}×
-                  </button>
+              <button onClick={()=>handleProg(1)} style={{ padding:"9px 18px", background:"rgba(0,180,255,0.08)", border:"1px solid "+border, borderRadius:8, color:dim, fontSize:15, cursor:"pointer" }}>⏭ Arrive</button>
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginLeft:"auto" }}>
+                <span style={{ fontSize:14, color:dim }}>Speed:</span>
+                {[0.5,1,2,5,10].map(s=>(
+                  <button key={s} onClick={()=>setSpd(s)} style={{ padding:"7px 12px", borderRadius:7, fontSize:14, cursor:"pointer", border:"1px solid "+(spd===s?accent:border), background:spd===s?"rgba(0,200,255,0.2)":"rgba(0,180,255,0.05)", color:spd===s?accent:dim }}>{s}×</button>
                 ))}
               </div>
             </div>
 
-            <div style={{ marginTop: 14, padding: "12px 18px", borderRadius: 8, fontSize: 15, fontFamily: "monospace", background: prog >= 1 ? "rgba(0,232,122,0.07)" : prog > 0 ? "rgba(0,200,255,0.05)" : "rgba(0,0,0,0.25)", border: "1px solid " + (prog >= 1 ? "rgba(0,232,122,0.3)" : prog > 0 ? border : "rgba(255,255,255,0.04)"), color: prog >= 1 ? ok : prog > 0 ? textCol : dim }}>
-              {prog === 0 && "⚡  Ready — press PLAY to emit the signal from " + target.planet}
-              {prog > 0 && prog < 1 && "🔵  Signal traveling… " + fmtDelay(distanceLY * prog) + " covered · " + fmtDelay(distanceLY * (1 - prog)) + " remaining"}
-              {prog >= 1 && "✅  Signal arrived on Earth after " + fmtDelay(distanceLY) + " — see what Earth receives below"}
+            <div style={{ marginTop:14, padding:"12px 18px", borderRadius:8, fontSize:15, fontFamily:"monospace", background:prog>=1?"rgba(0,232,122,0.07)":prog>0?"rgba(0,200,255,0.05)":"rgba(0,0,0,0.25)", border:"1px solid "+(prog>=1?"rgba(0,232,122,0.3)":prog>0?border:"rgba(255,255,255,0.04)"), color:prog>=1?ok:prog>0?textCol:dim }}>
+              {prog===0 && "⚡  Ready — press PLAY to emit the signal from "+target.planet}
+              {prog>0&&prog<1 && "🔵  Signal traveling… "+fmtDelay(distanceLY*prog)+" covered · "+fmtDelay(distanceLY*(1-prog))+" remaining"}
+              {prog>=1 && "✅  Signal arrived on Earth after "+fmtDelay(distanceLY)+" — see what Earth receives below"}
             </div>
           </div>
         </div>
 
+        {/* ── STEP 4 ── */}
         <div className="step">
           <StepLabel n="4" text="What Earth Sees" />
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
             <div>
-              <div style={{ fontSize: 14, color: dim, marginBottom: 10, textAlign: "center", textTransform: "uppercase", letterSpacing: 1.5 }}>
-                📡  You sent this from {target.planet}
-              </div>
+              <div style={{ fontSize:14, color:dim, marginBottom:10, textAlign:"center", textTransform:"uppercase", letterSpacing:1.5 }}>📡  You sent this from {target.planet}</div>
               {mediaURL ? (
-                mediaType === "image"
-                  ? <img src={mediaURL} alt="source" style={{ width: "100%", borderRadius: 10, border: "2px solid " + border, display: "block" }} />
-                  : <video ref={videoSrcRef} src={mediaURL} controls style={{ width: "100%", borderRadius: 10, border: "2px solid " + border, display: "block" }} />
+                mediaType==="image"
+                  ? <img src={mediaURL} alt="source" style={{ width:"100%", borderRadius:10, border:"2px solid "+border, display:"block" }}/>
+                  : <video ref={videoSrcRef} src={mediaURL} controls style={{ width:"100%", borderRadius:10, border:"2px solid "+border, display:"block" }}/>
               ) : (
-                <div style={{ borderRadius: 10, border: "2px dashed " + border, padding: "40px 20px", textAlign: "center", color: dim, fontSize: 15 }}>
-                  Upload a photo or video in Step 2 to see it here
-                </div>
+                <div style={{ borderRadius:10, border:"2px dashed "+border, padding:"40px 20px", textAlign:"center", color:dim, fontSize:15 }}>Upload a photo or video in Step 2 to see it here</div>
               )}
-              <div style={{ marginTop: 10, padding: "10px 14px", background: "rgba(0,200,255,0.05)", borderRadius: 8, fontSize: 14, color: dim, textAlign: "center" }}>
-                Age at event: <strong style={{ color: accent }}>{fmtAge(age0)}</strong>
-                {" · "}Year: <strong style={{ color: accent }}>{evDT.getFullYear()}</strong>
+              <div style={{ marginTop:10, padding:"10px 14px", background:"rgba(0,200,255,0.05)", borderRadius:8, fontSize:14, color:dim, textAlign:"center" }}>
+                Age at event: <strong style={{ color:accent }}>{fmtAge(age0)}</strong>{" · "}Year: <strong style={{ color:accent }}>{evDT.getFullYear()}</strong>
               </div>
             </div>
 
             <div>
-              <div style={{ fontSize: 14, color: dim, marginBottom: 10, textAlign: "center", textTransform: "uppercase", letterSpacing: 1.5 }}>
-                🌍  Earth receives — {fmtDelay(distanceLY)} later
-              </div>
-
+              <div style={{ fontSize:14, color:dim, marginBottom:10, textAlign:"center", textTransform:"uppercase", letterSpacing:1.5 }}>🌍  Earth receives — {fmtDelay(distanceLY)} later</div>
               {!arrivedOnEarth ? (
-                <div style={{ borderRadius: 10, border: "2px dashed rgba(245,200,66,0.3)", padding: "30px 20px", textAlign: "center", background: "rgba(245,200,66,0.04)", minHeight: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
-                  <div style={{ fontSize: 40 }}>📡</div>
-                  <div style={{ fontSize: 17, color: warn, fontWeight: 700 }}>
-                    {prog === 0 ? "Signal not yet emitted" : "Signal in transit…"}
-                  </div>
-                  <div style={{ fontSize: 15, color: dim, lineHeight: 1.7 }}>
-                    {prog === 0
-                      ? "Press PLAY above to send the signal"
-                      : (prog * 100).toFixed(1) + "% of the way · " + fmtDelay(distanceLY * (1 - prog)) + " remaining"}
-                  </div>
-                  {prog > 0 && (
-                    <div style={{ width: "80%", height: 8, borderRadius: 4, background: "rgba(0,180,255,0.15)", overflow: "hidden", marginTop: 4 }}>
-                      <div style={{ height: "100%", width: (prog * 100) + "%", background: "linear-gradient(90deg, rgba(0,200,255,0.5), " + accent + ")", borderRadius: 4, transition: "width 0.1s" }} />
-                    </div>
-                  )}
+                <div style={{ borderRadius:10, border:"2px dashed rgba(245,200,66,0.3)", padding:"30px 20px", textAlign:"center", background:"rgba(245,200,66,0.04)", minHeight:200, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:12 }}>
+                  <div style={{ fontSize:40 }}>📡</div>
+                  <div style={{ fontSize:17, color:warn, fontWeight:700 }}>{prog===0?"Signal not yet emitted":"Signal in transit…"}</div>
+                  <div style={{ fontSize:15, color:dim, lineHeight:1.7 }}>{prog===0?"Press PLAY above to send the signal":(prog*100).toFixed(1)+"% of the way · "+fmtDelay(distanceLY*(1-prog))+" remaining"}</div>
+                  {prog>0 && <div style={{ width:"80%", height:8, borderRadius:4, background:"rgba(0,180,255,0.15)", overflow:"hidden", marginTop:4 }}><div style={{ height:"100%", width:(prog*100)+"%", background:"linear-gradient(90deg,rgba(0,200,255,0.5),"+accent+")", borderRadius:4, transition:"width 0.1s" }}/></div>}
                 </div>
               ) : (
                 <>
                   {!mediaURL ? (
-                    <div style={{ borderRadius: 10, border: "2px solid rgba(0,232,122,0.5)", padding: "40px 20px", textAlign: "center", background: "rgba(0,232,122,0.05)", color: ok, fontSize: 16, minHeight: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      ✓  Signal arrived! Upload a photo or video in Step 2 to see it here.
-                    </div>
-                  ) : mediaType === "image" ? (
-                    <img src={mediaURL} alt="received" style={{ width: "100%", borderRadius: 10, display: "block", border: "2px solid rgba(0,232,122,0.6)", boxShadow: "0 0 30px rgba(0,232,122,0.15)", filter: distanceLY > 500 ? "sepia(0.6) brightness(0.78)" : "none", animation: "glow 2s ease-in-out infinite" }} />
+                    <div style={{ borderRadius:10, border:"2px solid rgba(0,232,122,0.5)", padding:"40px 20px", textAlign:"center", background:"rgba(0,232,122,0.05)", color:ok, fontSize:16, minHeight:200, display:"flex", alignItems:"center", justifyContent:"center" }}>✓  Signal arrived! Upload a photo or video in Step 2 to see it here.</div>
+                  ) : mediaType==="image" ? (
+                    <img src={mediaURL} alt="received" style={{ width:"100%", borderRadius:10, display:"block", border:"2px solid rgba(0,232,122,0.6)", boxShadow:"0 0 30px rgba(0,232,122,0.15)", filter:distanceLY>500?"sepia(0.6) brightness(0.78)":"none", animation:"glow 2s ease-in-out infinite" }}/>
                   ) : (
-                    <video ref={videoRcvRef} src={mediaURL} autoPlay loop style={{ width: "100%", borderRadius: 10, display: "block", border: "2px solid rgba(0,232,122,0.6)", boxShadow: "0 0 30px rgba(0,232,122,0.15)" }} />
+                    <video ref={videoRcvRef} src={mediaURL} autoPlay loop style={{ width:"100%", borderRadius:10, display:"block", border:"2px solid rgba(0,232,122,0.6)", boxShadow:"0 0 30px rgba(0,232,122,0.15)" }}/>
                   )}
-                  <div style={{ marginTop: 10, padding: "10px 14px", background: "rgba(0,232,122,0.06)", borderRadius: 8, fontSize: 14, color: ok, textAlign: "center", fontWeight: 600, lineHeight: 1.7 }}>
-                    ✓ Earth receives it in <strong>{arrStart.getFullYear()}</strong>
-                    {" · "}It was emitted in <strong>{evDT.getFullYear()}</strong>
-                    {" · "}Light-travel time: <strong>{delayYears.toFixed(3)} years</strong>
-                    {distanceLY > 500 && " · Ancient signal"}
+                  <div style={{ marginTop:10, padding:"10px 14px", background:"rgba(0,232,122,0.06)", borderRadius:8, fontSize:14, color:ok, textAlign:"center", fontWeight:600, lineHeight:1.7 }}>
+                    ✓ Earth receives it in <strong>{arrStart.getFullYear()}</strong>{" · "}Emitted in <strong>{evDT.getFullYear()}</strong>{" · "}Travel time: <strong>{delayYears.toFixed(3)} years</strong>{distanceLY>500&&" · Ancient signal"}
                   </div>
                 </>
               )}
@@ -938,127 +790,65 @@ export default function App() {
           </div>
         </div>
 
+        {/* ── STEP 5 ── */}
         <div className="step fadein">
           <StepLabel n="5" text="The Numbers" />
-
-          <div className="g3" style={{ marginBottom: 16 }}>
-            <InfoCard
-              label="What Earth sees now"
-              value={arrivedOnEarth ? fmtAge(apparentAge) : "No signal yet"}
-              color={arrivedOnEarth ? accent : warn}
-              sub={arrivedOnEarth ? "The arriving photons still show the event-start age." : "Earth cannot see the event until the photon reaches 100%."}
-            />
-
-            <InfoCard
-              label="Actual age right now"
-              value={fmtAge(actualNow)}
-              color={aliveNow ? ok : danger}
-              sub={aliveNow ? "Alive at this simulated moment." : "Would have exceeded the chosen lifespan."}
-            />
-
-            <InfoCard
-              label="Age hidden by delay"
-              value={fmtAge(hiddenByDelayNow)}
-              color={accent}
-              sub="This grows while the photon is traveling."
-            />
+          <div className="g3" style={{ marginBottom:16 }}>
+            <InfoCard label="What Earth sees now" value={arrivedOnEarth?fmtAge(apparentAge):"No signal yet"} color={arrivedOnEarth?accent:warn} sub={arrivedOnEarth?"The arriving photons still show the event-start age.":"Earth cannot see the event until the photon reaches 100%."}/>
+            <InfoCard label="Actual age right now" value={fmtAge(actualNow)} color={aliveNow?ok:danger} sub={aliveNow?"Alive at this simulated moment.":"Would have exceeded the chosen lifespan."}/>
+            <InfoCard label="Age hidden by delay" value={fmtAge(hiddenByDelayNow)} color={accent} sub="This grows while the photon is traveling."/>
           </div>
-
-          <div className="g3" style={{ marginBottom: 16 }}>
-            <InfoCard
-              label="Actual target age at first Earth reception"
-              value={fmtAge(ageWhenSeen)}
-              color={aliveWhenSeen ? ok : danger}
-              sub={aliveWhenSeen ? "Still alive when Earth first receives the signal." : "Already beyond lifespan when Earth first receives the signal."}
-            />
-
-            <InfoCard
-              label="Photon simulation time"
-              value={fmtDT(simDT)}
-              color={bright}
-              sub="This is the live time controlled by PLAY and the slider."
-            />
-
-            <InfoCard
-              label="Reception state"
-              value={recS === "not_emitted" ? "Not emitted" : recS === "traveling" ? "Traveling" : "Arrived"}
-              color={recS === "arrived" ? ok : recS === "traveling" ? accent : dim}
-              sub={
-                recS === "arrived"
-                  ? "Earth can finally observe the signal."
-                  : recS === "traveling"
-                  ? "Photon is still crossing space."
-                  : "Press PLAY to emit the signal."
-              }
-            />
+          <div className="g3" style={{ marginBottom:16 }}>
+            <InfoCard label="Actual target age at first Earth reception" value={fmtAge(ageWhenSeen)} color={aliveWhenSeen?ok:danger} sub={aliveWhenSeen?"Still alive when Earth first receives the signal.":"Already beyond lifespan when Earth first receives the signal."}/>
+            <InfoCard label="Photon simulation time" value={fmtDT(simDT)} color={bright} sub="This is the live time controlled by PLAY and the slider."/>
+            <InfoCard label="Reception state" value={recS==="not_emitted"?"Not emitted":recS==="traveling"?"Traveling":"Arrived"} color={recS==="arrived"?ok:recS==="traveling"?accent:dim} sub={recS==="arrived"?"Earth can finally observe the signal.":recS==="traveling"?"Photon is still crossing space.":"Press PLAY to emit the signal."}/>
           </div>
-
-          <div className="g2" style={{ marginBottom: 16 }}>
-            <InfoCard label="Signal emitted" value={fmtDT(evDT)} color={bright} />
-            <InfoCard label="Arrives on Earth" value={fmtDT(arrStart)} color={accent} />
-            <InfoCard label="One-way light-travel time" value={fmtDelay(distanceLY)} color={accent} />
-            <InfoCard
-              label="Distance"
-              value={(distanceLY / PC_TO_LY).toFixed(4) + " pc  ·  " + (distanceLY < 10 ? distanceLY.toFixed(3) : Math.round(distanceLY).toLocaleString()) + " ly"}
-              color={bright}
-            />
+          <div className="g2" style={{ marginBottom:16 }}>
+            <InfoCard label="Signal emitted"         value={fmtDT(evDT)}    color={bright}/>
+            <InfoCard label="Arrives on Earth"        value={fmtDT(arrStart)} color={accent}/>
+            <InfoCard label="One-way light-travel time" value={fmtDelay(distanceLY)} color={accent}/>
+            <InfoCard label="Distance" value={(distanceLY/PC_TO_LY).toFixed(4)+" pc  ·  "+(distanceLY<10?distanceLY.toFixed(3):Math.round(distanceLY).toLocaleString())+" ly"} color={bright}/>
           </div>
-
-          <div style={{ padding: "18px 22px", background: "rgba(0,200,255,0.05)", borderRadius: 12, borderLeft: "4px solid rgba(0,200,255,0.4)", fontSize: 16, color: dim, lineHeight: 1.9 }}>
-            <strong style={{ color: bright }}>Live interpretation: </strong>
-            {recS === "not_emitted" && (
-              <span>
-                The event is defined at <strong style={{ color: target.color }}>{target.planet}</strong>, but no photon has been launched yet.
-              </span>
-            )}
-            {recS === "traveling" && (
-              <span>
-                The photon has traveled <strong style={{ color: accent }}>{fmtDelay(distanceLY * simProg)}</strong>.
-                During that travel time, the real person has aged to <strong style={{ color: aliveNow ? ok : danger }}>{fmtAge(actualNow)}</strong>,
-                but Earth still sees <strong style={{ color: warn }}>nothing</strong>.
-              </span>
-            )}
-            {recS === "arrived" && (
-              <span>
-                Earth is now seeing the person at <strong style={{ color: accent }}>{fmtAge(apparentAge)}</strong>,
-                while the real person is <strong style={{ color: aliveNow ? ok : danger }}>{fmtAge(actualNow)}</strong>.
-                The delay hides <strong style={{ color: accent }}>{fmtAge(hiddenByDelayNow)}</strong> of aging.
-              </span>
-            )}
+          <div style={{ padding:"18px 22px", background:"rgba(0,200,255,0.05)", borderRadius:12, borderLeft:"4px solid rgba(0,200,255,0.4)", fontSize:16, color:dim, lineHeight:1.9 }}>
+            <strong style={{ color:bright }}>Live interpretation: </strong>
+            {recS==="not_emitted" && <span>The event is defined at <strong style={{ color:target.color }}>{target.planet}</strong>, but no photon has been launched yet.</span>}
+            {recS==="traveling"   && <span>The photon has traveled <strong style={{ color:accent }}>{fmtDelay(distanceLY*simProg)}</strong>. During that travel time, the real person has aged to <strong style={{ color:aliveNow?ok:danger }}>{fmtAge(actualNow)}</strong>, but Earth still sees <strong style={{ color:warn }}>nothing</strong>.</span>}
+            {recS==="arrived"     && <span>Earth is now seeing the person at <strong style={{ color:accent }}>{fmtAge(apparentAge)}</strong>, while the real person is <strong style={{ color:aliveNow?ok:danger }}>{fmtAge(actualNow)}</strong>. The delay hides <strong style={{ color:accent }}>{fmtAge(hiddenByDelayNow)}</strong> of aging.</span>}
           </div>
         </div>
 
-        <details style={{ background: panel, border: "1px solid " + border, borderRadius: 14, padding: "16px 22px", marginBottom: 14 }}>
-          <summary style={{ fontFamily: "'Orbitron',sans-serif", fontSize: 13, color: accent, letterSpacing: 2 }}>💡  QUICK EXAMPLES</summary>
-          <div style={{ marginTop: 14, fontSize: 16, color: dim, lineHeight: 2.2 }}>
-            <strong style={{ color: bright }}>Kepler-452 b (~1,799 ly) · age 25:</strong> Earth sees 25 — they're actually about 1,824. Long dead.<br />
-            <strong style={{ color: bright }}>TOI-1231 b (~90 ly) · age 25:</strong> Earth sees 25 — actually about 115. Likely dead.<br />
-            <strong style={{ color: bright }}>Proxima Cen b (~4.2 ly) · age 25:</strong> Earth sees 25 — actually about 29.2. Probably still alive.<br />
-            <strong style={{ color: bright }}>Mars (Manual · ~12.5 light-minutes) · age 25:</strong> Delay is tiny — nearly real-time.
+        <details style={{ background:panel, border:"1px solid "+border, borderRadius:14, padding:"16px 22px", marginBottom:14 }}>
+          <summary style={{ fontFamily:"'Orbitron',sans-serif", fontSize:13, color:accent, letterSpacing:2 }}>💡  QUICK EXAMPLES</summary>
+          <div style={{ marginTop:14, fontSize:16, color:dim, lineHeight:2.2 }}>
+            <strong style={{ color:bright }}>Kepler-452 b (~1,799 ly) · age 25:</strong> Earth sees 25 — they're actually about 1,824. Long dead.<br/>
+            <strong style={{ color:bright }}>TOI-1231 b (~90 ly) · age 25:</strong> Earth sees 25 — actually about 115. Likely dead.<br/>
+            <strong style={{ color:bright }}>Proxima Cen b (~4.2 ly) · age 25:</strong> Earth sees 25 — actually about 29.2. Probably still alive.<br/>
+            <strong style={{ color:bright }}>Mars (Manual · ~12.5 light-minutes) · age 25:</strong> Delay is tiny — nearly real-time.
           </div>
         </details>
 
-        <details style={{ background: panel, border: "1px solid " + border, borderRadius: 14, padding: "16px 22px" }}>
-          <summary style={{ fontFamily: "'Orbitron',sans-serif", fontSize: 13, color: accent, letterSpacing: 2 }}>🔬  SCIENTIFIC ASSUMPTIONS</summary>
-          <div style={{ marginTop: 14, fontSize: 16, color: dim, lineHeight: 2.2 }}>
-            • A light-year is a distance, not a time unit.<br />
-            • Travel time is computed from distance ÷ c. When distance is expressed in light-years, the numeric travel time in years is the same value.<br />
-            • Point-source model: every pixel in the image/video shares the same light-travel delay.<br />
-            • Host-system catalog distance is used as the Earth ↔ target distance.<br />
+        <details style={{ background:panel, border:"1px solid "+border, borderRadius:14, padding:"16px 22px" }}>
+          <summary style={{ fontFamily:"'Orbitron',sans-serif", fontSize:13, color:accent, letterSpacing:2 }}>🔬  SCIENTIFIC ASSUMPTIONS</summary>
+          <div style={{ marginTop:14, fontSize:16, color:dim, lineHeight:2.2 }}>
+            • A light-year is a distance, not a time unit.<br/>
+            • Travel time is computed from distance ÷ c. When distance is expressed in light-years, the numeric travel time in years is the same value.<br/>
+            • Point-source model: every pixel in the image/video shares the same light-travel delay.<br/>
+            • Host-system catalog distance is used as the Earth ↔ target distance.<br/>
             • No cosmological expansion, gravitational redshift, or relativistic time dilation modeled.
           </div>
         </details>
 
-        <div style={{ textAlign: "center", marginTop: 50 }}>
-          <div style={{ fontSize: 13, color: "rgba(0,200,255,0.55)", marginBottom: 10, lineHeight: 1.8 }}>
-            Designed by <strong style={{ color: "rgba(255,255,255,0.9)" }}>Dr. Mohamed El-Hadedy</strong>,
-            Director of the <strong style={{ color: "rgba(0,200,255,0.9)" }}>Reconfigurable Space Computing Lab (RSCL)</strong>,
+        <div style={{ textAlign:"center", marginTop:50 }}>
+          <div style={{ fontSize:13, color:"rgba(0,200,255,0.55)", marginBottom:10, lineHeight:1.8 }}>
+            Designed by <strong style={{ color:"rgba(255,255,255,0.9)" }}>Dr. Mohamed El-Hadedy</strong>,
+            Director of the <strong style={{ color:"rgba(0,200,255,0.9)" }}>Reconfigurable Space Computing Lab (RSCL)</strong>,
             California State Polytechnic University, Pomona.
           </div>
-          <div style={{ textAlign: "center", fontSize: 13, color: "rgba(0,180,255,0.2)", letterSpacing: 2 }}>
+          <div style={{ textAlign:"center", fontSize:13, color:"rgba(0,180,255,0.2)", letterSpacing:2 }}>
             RSCL@CPP · EARTH LOOKBACK SIMULATOR · distance / c = travel time · 1 pc = 3.26156 ly
           </div>
         </div>
+
       </div>
     </>
   );
