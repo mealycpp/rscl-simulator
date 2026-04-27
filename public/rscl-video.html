@@ -39,19 +39,84 @@ canvas{position:absolute;inset:0;}
   <canvas id="cs" style="position:absolute;inset:0;"></canvas>
 
   <div style="position:relative;z-index:10;text-align:center;">
-    <!-- RSCL Logo placeholder -->
-    <div style="
-      width:100px;height:100px;border-radius:50%;
-      border:2px solid rgba(0,228,255,0.8);
-      display:flex;align-items:center;justify-content:center;
-      margin:0 auto 32px;
-      box-shadow:0 0 40px rgba(0,228,255,0.3);
-      animation:logoSpin 8s linear infinite;
-    ">
-      <div style="text-align:center;">
-        <div style="font-family:'Orbitron',sans-serif;font-size:10px;color:#00e4ff;font-weight:700;letter-spacing:2px;">RSCL</div>
-        <div style="font-family:'Orbitron',sans-serif;font-size:7px;color:rgba(0,228,255,0.6);letter-spacing:1px;">@CPP</div>
-      </div>
+    <!-- RSCL Seal — exact SVG from App.jsx -->
+    <div style="width:180px;height:148px;margin:0 auto 24px;filter:drop-shadow(0 0 24px rgba(0,200,255,0.6));">
+      <svg width="180" height="148" viewBox="0 0 680 560" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <style>
+            @keyframes rsclspin1{from{transform-origin:340px 240px;transform:rotate(0deg)}to{transform-origin:340px 240px;transform:rotate(360deg)}}
+            @keyframes rsclspin2{from{transform-origin:340px 240px;transform:rotate(0deg)}to{transform-origin:340px 240px;transform:rotate(-360deg)}}
+            @keyframes rsclpulse{0%,100%{opacity:0.6}50%{opacity:1}}
+            @keyframes rsclbeam{0%,100%{opacity:0.5;stroke-dashoffset:0}50%{opacity:1;stroke-dashoffset:-14}}
+            @keyframes rscltw{0%,100%{opacity:0.2}50%{opacity:1}}
+            .rr1{animation:rsclspin1 20s linear infinite}.rr2{animation:rsclspin2 30s linear infinite}
+            .rpc{animation:rsclpulse 2.6s ease-in-out infinite}.rbm{animation:rsclbeam 1.8s ease-in-out infinite;stroke-dasharray:6 4}
+            .rtw1{animation:rscltw 2.1s ease-in-out infinite}.rtw2{animation:rscltw 3.3s ease-in-out infinite 0.6s}
+            .rtw3{animation:rscltw 1.9s ease-in-out infinite 1.2s}.rtw4{animation:rscltw 2.8s ease-in-out infinite 0.4s}
+            .rtw5{animation:rscltw 3.6s ease-in-out infinite 1.8s}
+          </style>
+          <radialGradient id="sv2" cx="50%" cy="50%" r="52%"><stop offset="0%" stop-color="#040d1e"/><stop offset="70%" stop-color="#010812"/><stop offset="100%" stop-color="#000408"/></radialGradient>
+          <radialGradient id="ssg2" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ffffff"/><stop offset="25%" stop-color="#ffe680"/><stop offset="65%" stop-color="#ff9a20" stop-opacity="0.35"/><stop offset="100%" stop-color="#ff6000" stop-opacity="0"/></radialGradient>
+          <radialGradient id="seg2" cx="36%" cy="33%" r="65%"><stop offset="0%" stop-color="#4ab8ff"/><stop offset="35%" stop-color="#1560b0"/><stop offset="72%" stop-color="#0b3870"/><stop offset="100%" stop-color="#041428"/></radialGradient>
+          <radialGradient id="sat2" cx="50%" cy="50%" r="50%"><stop offset="74%" stop-color="#4fc3f7" stop-opacity="0"/><stop offset="100%" stop-color="#4fc3f7" stop-opacity="0.38"/></radialGradient>
+          <radialGradient id="scg2" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#00eeff" stop-opacity="0.2"/><stop offset="100%" stop-color="#00eeff" stop-opacity="0"/></radialGradient>
+          <clipPath id="sec2"><circle cx="430" cy="230" r="40"/></clipPath>
+          <clipPath id="ssc2"><circle cx="340" cy="240" r="228"/></clipPath>
+          <filter id="sfg2"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <circle cx="340" cy="240" r="240" fill="#020915" stroke="#00c8ff" stroke-width="2.8" stroke-opacity="0.55"/>
+        <circle cx="340" cy="240" r="237" fill="none" stroke="#00c8ff" stroke-width="0.6" stroke-opacity="0.18"/>
+        <g stroke="#00c8ff" stroke-width="1.8" stroke-opacity="0.6">
+          <line x1="340" y1="2" x2="340" y2="20"/><line x1="340" y1="460" x2="340" y2="478"/>
+          <line x1="100" y1="240" x2="118" y2="240"/><line x1="562" y1="240" x2="580" y2="240"/>
+        </g>
+        <g clip-path="url(#ssc2)">
+          <circle cx="340" cy="240" r="228" fill="url(#sv2)"/>
+        </g>
+        <g class="rr1">
+          <circle cx="340" cy="240" r="215" fill="none" stroke="#00c8ff" stroke-width="1" stroke-opacity="0.18" stroke-dasharray="2 7"/>
+          <g stroke="#00c8ff" stroke-opacity="0.55">
+            <line x1="340" y1="27" x2="340" y2="42" stroke-width="2.2"/>
+            <line x1="340" y1="438" x2="340" y2="453" stroke-width="2.2"/>
+            <line x1="127" y1="240" x2="142" y2="240" stroke-width="2.2"/>
+            <line x1="538" y1="240" x2="553" y2="240" stroke-width="2.2"/>
+          </g>
+        </g>
+        <g class="rr2">
+          <ellipse cx="340" cy="240" rx="140" ry="42" fill="none" stroke="#00c8ff" stroke-width="0.9" stroke-opacity="0.28" stroke-dasharray="4 6" transform="rotate(-10,340,240)"/>
+          <circle cx="340" cy="198" r="5" fill="#00eeff" opacity="0.95" transform="rotate(-10,340,240)"/>
+        </g>
+        <circle cx="340" cy="240" r="185" fill="none" stroke="#00c8ff" stroke-width="1.4" stroke-opacity="0.45"/>
+        <path id="sarcTop2" d="M 130,240 A 210,210 0 0,1 550,240" fill="none"/>
+        <text font-family="'Orbitron',sans-serif" font-size="15" font-weight="700" fill="#00c8ff" letter-spacing="4" opacity="0.95">
+          <textPath href="#sarcTop2" startOffset="7%">RECONFIGURABLE · SPACE · COMPUTING · LAB</textPath>
+        </text>
+        <path id="sarcBot2" d="M 148,240 A 192,192 0 0,0 532,240" fill="none"/>
+        <text font-family="'Orbitron',sans-serif" font-size="14" font-weight="700" fill="#7ac8e8" letter-spacing="5" opacity="0.9">
+          <textPath href="#sarcBot2" startOffset="13%">CAL POLY POMONA · EST. 1938</textPath>
+        </text>
+        <circle cx="340" cy="240" r="135" fill="url(#scg2)" class="rpc"/>
+        <circle cx="238" cy="228" r="36" fill="url(#ssg2)"/>
+        <circle cx="238" cy="228" r="10" fill="#ffffff"/>
+        <g stroke="#ffe060" stroke-linecap="round" opacity="0.75">
+          <line x1="238" y1="212" x2="238" y2="200" stroke-width="2"/><line x1="238" y1="244" x2="238" y2="256" stroke-width="2"/>
+          <line x1="222" y1="228" x2="210" y2="228" stroke-width="2"/><line x1="254" y1="228" x2="266" y2="228" stroke-width="2"/>
+        </g>
+        <line x1="256" y1="228" x2="388" y2="230" class="rbm" stroke="#00eeff" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="322" cy="229" r="5.5" fill="#ffffff" opacity="0.95" filter="url(#sfg2)"/>
+        <circle cx="430" cy="230" r="42" fill="url(#seg2)"/>
+        <g clip-path="url(#sec2)" opacity="0.85">
+          <ellipse cx="417" cy="218" rx="12" ry="7.5" fill="#2d8a48" transform="rotate(-20,417,218)"/>
+          <ellipse cx="436" cy="235" rx="14" ry="6.5" fill="#2d8a48" transform="rotate(15,436,235)"/>
+          <ellipse cx="413" cy="242" rx="8" ry="5" fill="#2d8a48" transform="rotate(-5,413,242)"/>
+        </g>
+        <circle cx="430" cy="230" r="42" fill="url(#sat2)"/>
+        <circle cx="430" cy="230" r="47" fill="none" stroke="#4fc3f7" stroke-width="3" stroke-opacity="0.22"/>
+        <line x1="220" y1="326" x2="460" y2="326" stroke="#00c8ff" stroke-width="0.8" stroke-opacity="0.4"/>
+        <text x="340" y="322" text-anchor="middle" font-family="'Orbitron',sans-serif" font-size="30" font-weight="900" fill="#00eeff" letter-spacing="4" opacity="1">RSCL@CPP</text>
+        <line x1="220" y1="336" x2="460" y2="336" stroke="#00c8ff" stroke-width="0.8" stroke-opacity="0.4"/>
+        <text x="340" y="354" text-anchor="middle" font-family="'Orbitron',sans-serif" font-size="9" fill="#4a8aaa" letter-spacing="4" opacity="0.85">EARTH LOOKBACK SIMULATOR</text>
+      </svg>
     </div>
 
     <div style="font-family:'Orbitron',sans-serif;font-size:42px;font-weight:900;color:#fff;letter-spacing:4px;text-shadow:0 0 40px rgba(0,228,255,0.5);margin-bottom:8px;">
@@ -345,11 +410,11 @@ function tick() {
   const pct = Math.min(100, (totalElapsed / TOTAL_DURATION) * 100);
   document.getElementById('progress-bar').style.width = pct + '%';
 
-  if (sceneElapsed >= scenes[currentScene].duration && currentScene < scenes.length - 1) {
+  if (currentScene < scenes.length - 1 && sceneElapsed >= scenes[currentScene].duration) {
     currentScene++;
     showScene(currentScene);
   }
-  rafId = requestAnimationFrame(tick);
+  requestAnimationFrame(tick);
 }
 
 function skipToEnd() {
