@@ -134,12 +134,17 @@ document.getElementById('start-screen').addEventListener('click', () => {
   ss.style.opacity = '0';
   setTimeout(() => { ss.style.display = 'none'; }, 800);
 
+  // Reset timing
+  totalStart = Date.now();
+  sceneStart = Date.now();
+  currentScene = 0;
+
   // Start audio
   initAudio();
 
-  // Start video tick
-  totalStart = Date.now();
-  sceneStart = Date.now();
+  // Start video — show first scene and begin tick loop
+  showScene(0);
+  tick();
 });
 </script>
 
