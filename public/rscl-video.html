@@ -613,7 +613,7 @@ function s3() {
     if(t>2&&!t2){t2=true;document.getElementById('s3-unit').style.color='rgba(255,255,255,0.8)';}
     if(t>3.5&&!t3){t3=true;document.getElementById('s3-math').style.color='rgba(0,232,122,0.85)';}
 
-    activeAnimators.s3=requestAnimationFrame(draw);
+    if(currentScene===2) activeAnimators.s3=requestAnimationFrame(draw);
   }
   draw();
 }
@@ -703,7 +703,7 @@ function s4() {
     eG2.addColorStop(0,'rgba(140,215,255,0.9)'); eG2.addColorStop(0.3,'#1a6fbb'); eG2.addColorStop(1,'rgba(0,6,40,0.9)');
     ctx4b.fillStyle=eG2; ctx4b.fill();
 
-    activeAnimators.s4=requestAnimationFrame(draw);
+    if(currentScene===3) activeAnimators.s4=requestAnimationFrame(draw);
   }
   draw();
 }
@@ -830,7 +830,7 @@ function s5() {
       ctx.font='bold 11px "IBM Plex Mono"';ctx.fillStyle=col;ctx.fillText(val,cx,FX_Y+32);
     });
 
-    activeAnimators.s5=requestAnimationFrame(draw);
+    if(currentScene===4) activeAnimators.s5=requestAnimationFrame(draw);
   }
   draw();
 }
@@ -871,7 +871,7 @@ function s6() {
     drawStars(ctx,W,H,300,t);
     drawNebula(ctx,W*0.6,H*0.5,400,'rgba(5,0,40,A)',0.12);
 
-    activeAnimators.s6=requestAnimationFrame(draw);
+    if(currentScene===5) activeAnimators.s6=requestAnimationFrame(draw);
   }
   draw();
 }
@@ -915,7 +915,7 @@ function s7() {
     ctx.font='10px "IBM Plex Mono"';ctx.fillStyle='rgba(255,255,255,0.25)';ctx.textAlign='left';ctx.fillText('400nm',SBX,SBY+SBH+14);
     ctx.textAlign='right';ctx.fillText('700nm+',SBX+SBW,SBY+SBH+14);
 
-    activeAnimators.s7=requestAnimationFrame(draw);
+    if(currentScene===6) activeAnimators.s7=requestAnimationFrame(draw);
   }
   draw();
 }
@@ -956,7 +956,7 @@ function s8() {
     const scanY2=((t*80)%H);
     ctx.fillStyle='rgba(0,228,255,0.012)'; ctx.fillRect(0,scanY2,W,2);
 
-    activeAnimators.s8=requestAnimationFrame(draw);
+    if(currentScene===7) activeAnimators.s8=requestAnimationFrame(draw);
   }
   draw();
 }
