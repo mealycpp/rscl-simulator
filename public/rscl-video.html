@@ -584,7 +584,7 @@ function s5() {
     [8,13,19].forEach(r=>{ctx.beginPath();ctx.arc(sigX,MY,r,0,Math.PI*2);ctx.strokeStyle=`rgba(0,232,255,${0.5-r*0.018})`;ctx.lineWidth=1.2;ctx.stroke();});
 
     // SR CLOCKS
-    [[W*0.38,(t*0.5)%(Math.PI*2),'rgba(79,195,247,0.9)','t'],[W*0.38+52,(t*0.4999)%(Math.PI*2),'rgba(192,132,252,0.9)','τ']].forEach(([cx,secA,col,lbl])=>{
+    [[W*0.38,(t*0.5)%(Math.PI*2),'rgba(79,195,247,0.9)','t_coord'],[W*0.38+70,(t*0.4999)%(Math.PI*2),'rgba(192,132,252,0.9)','τ proper']].forEach(([cx,secA,col,lbl])=>{
       const cy=SPACE_H*0.22,cr=16;
       ctx.beginPath();ctx.arc(cx,cy,cr,0,Math.PI*2);ctx.fillStyle='rgba(0,4,16,0.9)';ctx.fill();ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.stroke();
       for(let i=0;i<12;i++){const a=i/12*Math.PI*2;ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*cr*0.75,cy+Math.sin(a)*cr*0.75);ctx.lineTo(cx+Math.cos(a)*cr*0.9,cy+Math.sin(a)*cr*0.9);ctx.strokeStyle=col.replace('0.9','0.3');ctx.lineWidth=0.7;ctx.stroke();}
@@ -592,7 +592,14 @@ function s5() {
       ctx.beginPath();ctx.arc(cx,cy,2,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
       ctx.font='7px "IBM Plex Mono"';ctx.fillStyle=col;ctx.textAlign='center';ctx.fillText(lbl,cx,cy+cr+10);
     });
-    ctx.font='7px "IBM Plex Mono"';ctx.fillStyle='rgba(200,200,255,0.35)';ctx.textAlign='center';ctx.fillText('SR Dilation',W*0.38+26,SPACE_H*0.22-18);
+    // SR Dilation label centered above both clocks
+    ctx.font='bold 8px "IBM Plex Mono"';ctx.fillStyle='rgba(200,200,255,0.40)';ctx.textAlign='center';
+    ctx.fillText('── SR TIME DILATION ──',W*0.38+35,SPACE_H*0.22-38);
+    // "vs" between clocks
+    ctx.font='8px "IBM Plex Mono"';ctx.fillStyle='rgba(200,200,255,0.30)';
+    ctx.fillText('vs',W*0.38+35,SPACE_H*0.22+2);
+    ctx.font='7px "IBM Plex Mono"';ctx.fillStyle='rgba(200,200,255,0.25)';
+    ctx.fillText('γ=1+5×10⁻⁹',W*0.38+35,SPACE_H*0.22+13);
 
     // EARTH
     for(let r=80;r>20;r-=10){ctx.beginPath();ctx.arc(EX,MY,r,0,Math.PI*2);ctx.fillStyle=`rgba(0,30,100,${0.04*(1-r/80)})`; ctx.fill();}
@@ -774,5 +781,246 @@ window.onload = () => {
   tick();
 };
 </script>
+
+  <!-- NASA PUBLIC DOMAIN AUDIO -->
+  <!-- Source: NASA SoundCloud - public domain, no copyright -->
+  <!-- Credit: NASA/JPL -->
+  <div style="position:fixed;bottom:60px;left:16px;z-index:999;font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(0,228,255,0.3);letter-spacing:1px;" id="audio-credit">
+    🔊 AUDIO: Synthesized score · Inspired by NASA Voyager plasma wave recordings · nasa.gov
+  </div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// CINEMATIC SCORE — Web Audio API + NASA-inspired space sounds
+// All generated programmatically — public domain, no copyright
+// Inspired by NASA's own space plasma wave recordings
+// ═══════════════════════════════════════════════════════════════════
+
+let audioCtx = null;
+let masterGain = null;
+let currentSceneAudio = {};
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.setValueAtTime(0.0, audioCtx.currentTime);
+  masterGain.gain.linearRampToValueAtTime(0.7, audioCtx.currentTime + 2);
+  masterGain.connect(audioCtx.destination);
+
+  // Start the full cinematic score
+  playScore();
+}
+
+// ── SYNTHESIS HELPERS ─────────────────────────────────────────────
+function makeOsc(type, freq, gainVal, startTime, duration, fadeIn=0.3, fadeOut=0.5) {
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  const now = audioCtx.currentTime + startTime;
+
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, now);
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(gainVal, now + fadeIn);
+  gain.gain.setValueAtTime(gainVal, now + duration - fadeOut);
+  gain.gain.linearRampToValueAtTime(0, now + duration);
+
+  osc.connect(gain);
+  gain.connect(masterGain);
+  osc.start(now);
+  osc.stop(now + duration);
+  return { osc, gain };
+}
+
+function makeNoise(gainVal, startTime, duration, lowFreq=80, highFreq=400) {
+  const bufSize = audioCtx.sampleRate * Math.min(duration, 4);
+  const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+  const data = buf.getChannelData(0);
+  for(let i=0;i<bufSize;i++) data[i] = (Math.random()*2-1);
+
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  src.loop = duration > 4;
+
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.value = (lowFreq+highFreq)/2;
+  filter.Q.value = 0.5;
+
+  const gain = audioCtx.createGain();
+  const now = audioCtx.currentTime + startTime;
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(gainVal, now + 1);
+  gain.gain.setValueAtTime(gainVal, now + duration - 1);
+  gain.gain.linearRampToValueAtTime(0, now + duration);
+
+  src.connect(filter);
+  filter.connect(gain);
+  gain.connect(masterGain);
+  src.start(now);
+  if(!src.loop) src.stop(now + duration);
+  return { src, gain };
+}
+
+function makeChord(freqs, type, gainVal, startTime, duration) {
+  freqs.forEach(f => makeOsc(type, f, gainVal/freqs.length, startTime, duration));
+}
+
+function makeSweep(startFreq, endFreq, type, gainVal, startTime, duration) {
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  const now = audioCtx.currentTime + startTime;
+
+  osc.type = type;
+  osc.frequency.setValueAtTime(startFreq, now);
+  osc.frequency.exponentialRampToValueAtTime(endFreq, now + duration);
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(gainVal, now + 0.5);
+  gain.gain.linearRampToValueAtTime(0, now + duration);
+
+  osc.connect(gain);
+  gain.connect(masterGain);
+  osc.start(now);
+  osc.stop(now + duration);
+}
+
+// ── FULL 90-SECOND CINEMATIC SCORE ────────────────────────────────
+// Composed to match each scene exactly
+function playScore() {
+
+  // ── SCENE 1 (0-8s): COLD OPEN — Deep space awakening ─────────
+  // Low drone + cosmic noise
+  makeOsc('sine', 55, 0.4, 0, 8, 2, 2);        // Deep bass drone
+  makeOsc('sine', 82.5, 0.2, 0, 8, 3, 2);      // Fifth above
+  makeNoise(0.06, 0, 8, 60, 200);              // Space hiss
+  // Plasma wave effect (NASA Voyager inspired)
+  makeSweep(200, 800, 'sine', 0.08, 1, 3);
+  makeSweep(600, 150, 'sine', 0.06, 4, 3);
+  // Title sting at 6s
+  makeChord([220, 277, 330], 'triangle', 0.25, 5.5, 2.5);
+
+  // ── SCENE 2 (8-16s): THE QUESTION — Mysterious, hopeful ───────
+  // Gentle string-like pad
+  makeChord([138.6, 174.6, 220, 261.6], 'sine', 0.18, 8.5, 7);
+  makeOsc('triangle', 110, 0.15, 8, 8, 1, 2);
+  makeNoise(0.04, 8, 8, 100, 300);
+  // Rising tension
+  makeSweep(440, 880, 'sine', 0.06, 13, 3);
+
+  // ── SCENE 3 (16-25s): LIGHT TRAVEL — Building journey ─────────
+  // Pulse rhythm like a heartbeat / signal
+  for(let i=0; i<16; i++) {
+    makeOsc('sine', 440, 0.12, 16 + i*0.55, 0.3, 0.05, 0.1);
+    makeOsc('sine', 220, 0.08, 16 + i*0.55, 0.3, 0.05, 0.1);
+  }
+  // Rising orchestral swell
+  makeChord([110, 138.6, 165, 196, 220], 'triangle', 0.15, 17, 8, 1, 1);
+  makeNoise(0.05, 16, 9, 150, 400);
+  // Countdown-like sweep
+  makeSweep(880, 1760, 'sine', 0.05, 23, 2);
+
+  // ── SCENE 4 (25-39s): PHYSICS ENGINES — Epic reveal ───────────
+  // MAIN THEME — bold, triumphant
+  // Brass-like chord progression
+  const theme = [
+    [0, [130.8, 164.8, 196, 261.6], 0.22, 4],   // C major
+    [4, [146.8, 174.6, 220, 293.7], 0.22, 4],   // D major  
+    [8, [164.8, 207.7, 246.9, 329.6], 0.22, 3], // E major
+    [11, [130.8, 164.8, 196, 261.6], 0.28, 3],  // C major big
+  ];
+  theme.forEach(([offset, freqs, gain, dur]) => {
+    makeChord(freqs, 'sawtooth', gain * 0.4, 25 + offset, dur, 0.1, 0.3);
+    makeChord(freqs.map(f=>f*2), 'triangle', gain * 0.15, 25 + offset, dur, 0.1, 0.3);
+  });
+  // Percussion hits for each engine reveal
+  [0, 0.6, 1.2, 1.8, 2.4, 3.0, 3.6].forEach(offset => {
+    makeNoise(0.3, 25 + offset, 0.15, 200, 800);  // Snare-like
+    makeOsc('sine', 80, 0.4, 25 + offset, 0.2, 0.01, 0.1);  // Kick
+  });
+  makeNoise(0.05, 25, 14, 100, 400);
+  // Continuous swell
+  makeChord([55, 82.5, 110, 165], 'sine', 0.2, 26, 13, 2, 2);
+
+  // ── SCENE 5 (39-53s): THE CANVAS — Full orchestral ────────────
+  // Peak of the piece — everything comes alive
+  // Full chord spread
+  makeChord([65.4, 98, 130.8, 164.8, 196, 261.6, 329.6], 'triangle', 0.18, 39, 14, 2, 2);
+  makeChord([65.4, 98, 130.8, 164.8, 196, 261.6, 329.6], 'sine', 0.15, 39, 14, 2, 2);
+  // Fast arpeggio like stars twinkling
+  [0,0.15,0.3,0.45,0.6,0.75,0.9,1.05].forEach((offset, i) => {
+    const freqs = [261.6, 329.6, 392, 523.2, 659.3];
+    makeOsc('sine', freqs[i%5], 0.08, 39+offset, 0.5, 0.02, 0.2);
+  });
+  // Repeat arpeggio
+  for(let bar=0; bar<6; bar++) {
+    [0,0.2,0.4,0.6,0.8,1.0,1.2,1.4].forEach((offset, i) => {
+      const freqs2 = [261.6, 329.6, 392, 440, 523.2, 659.3, 523.2, 440];
+      makeOsc('triangle', freqs2[i], 0.06, 39 + bar*1.6 + offset + 1.2, 0.35, 0.02, 0.15);
+    });
+  }
+  makeNoise(0.04, 39, 14, 200, 600);
+
+  // ── SCENE 6 (53-63s): 62 PLANETS — Wonder and discovery ───────
+  // Softer, mysterious — each planet popping in
+  makeChord([138.6, 174.6, 220, 277.2], 'sine', 0.2, 53, 10, 1, 1);
+  // Twinkle effect for planets appearing
+  for(let i=0; i<20; i++) {
+    const baseFreqs = [523.2, 659.3, 783.9, 1046.5, 1318.5];
+    makeOsc('sine', baseFreqs[i%5] * (1 + Math.sin(i)*0.1), 0.07, 53 + i*0.4, 0.6, 0.05, 0.3);
+  }
+  makeNoise(0.03, 53, 10, 80, 250);
+  // NASA Voyager-inspired plasma sweep
+  makeSweep(300, 1200, 'sine', 0.04, 55, 5);
+  makeSweep(1200, 300, 'sine', 0.04, 60, 3);
+
+  // ── SCENE 7 (63-75s): BIOSIGNATURES — Profound, awe ──────────
+  // Slow, majestic — the "life" moment
+  makeChord([87.3, 110, 130.8, 164.8, 196], 'sine', 0.22, 63, 12, 2, 2);
+  makeChord([174.6, 220, 261.6, 329.6], 'triangle', 0.1, 64, 11, 2, 2);
+  // Slowly rising sweep — evolution of life
+  makeSweep(110, 440, 'sine', 0.08, 64, 8);
+  // O2 detection "ping"
+  makeOsc('sine', 880, 0.15, 67, 2, 0.05, 1.5);
+  makeOsc('sine', 1320, 0.1, 68, 2, 0.05, 1.5);
+  makeNoise(0.035, 63, 12, 60, 180);
+
+  // ── SCENE 8 (75-90s): CALL TO ACTION — Triumphant finale ──────
+  // GRAND FINALE — everything together
+  // Main theme returns, bigger
+  makeChord([65.4, 98, 130.8, 164.8, 196, 246.9, 261.6, 329.6], 'sawtooth', 0.16, 75, 15, 1, 3);
+  makeChord([65.4, 98, 130.8, 164.8, 196, 246.9, 261.6, 329.6], 'triangle', 0.14, 75, 15, 1, 3);
+  makeChord([65.4, 98, 130.8, 164.8, 196, 246.9, 261.6, 329.6], 'sine', 0.12, 75, 15, 1, 3);
+  // Heroic fanfare rhythm
+  [[0,0.3],[0.4,0.3],[0.8,0.6],[1.6,0.3],[2.0,0.3],[2.4,1.2],[4.0,0.3],[4.4,0.3],[4.8,0.6]].forEach(([offset, dur]) => {
+    makeChord([261.6, 329.6, 392, 523.2], 'triangle', 0.15, 76 + offset, dur, 0.02, 0.1);
+  });
+  // Percussion
+  [0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7].forEach(offset => {
+    makeNoise(0.2, 75.2+offset, 0.12, 300, 1000);
+    makeOsc('sine', 65, 0.35, 75.2+offset, 0.15, 0.01, 0.08);
+  });
+  // Final resolution chord — big, full
+  makeChord([65.4, 98, 130.8, 164.8, 196, 261.6, 329.6, 392, 523.2], 'sine', 0.25, 85, 5, 0.5, 4);
+  makeNoise(0.04, 75, 15, 100, 500);
+  // Fade out
+  setTimeout(() => {
+    if(masterGain) {
+      masterGain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 3);
+    }
+  }, 88000);
+}
+
+// Start audio on first user interaction (browser requirement)
+document.addEventListener('click', initAudio, { once: true });
+document.addEventListener('keydown', initAudio, { once: true });
+
+// Also try to autostart (works in some browsers)
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    try { initAudio(); } catch(e) {}
+  }, 500);
+});
+</script>
+
 </body>
 </html>
