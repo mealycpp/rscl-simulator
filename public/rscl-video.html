@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>RSCL Earth Lookback Simulator — Intro Video</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=IBM+Plex+Mono:wght@300;400;500;700&family=Exo+2:wght@200;300;400;700;900&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:1280px;height:720px;overflow:hidden;background:#000;cursor:none;}
+
+/* SCENE SYSTEM */
+.scene{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity 0.05s;}
+.scene.active{opacity:1;pointer-events:all;}
+
+/* SHARED */
+canvas{position:absolute;inset:0;}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;}
+
+/* PROGRESS BAR */
+#progress-bar{position:fixed;bottom:0;left:0;height:3px;background:linear-gradient(90deg,#00e4ff,#00e87a);z-index:999;transition:width 0.1s linear;}
+#scene-label{position:fixed;bottom:10px;right:16px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(0,228,255,0.4);z-index:999;letter-spacing:2px;}
+
+/* SKIP */
+#skip{position:fixed;top:20px;right:20px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(0,228,255,0.5);z-index:999;letter-spacing:2px;cursor:pointer;}
+#skip:hover{color:rgba(0,228,255,0.9);}
+</style>
+</head>
+<body>
+
+<div id="progress-bar" style="width:0%"></div>
+<div id="scene-label">SCENE 1 / 8</div>
+<div id="skip" onclick="skipToEnd()">SKIP ▶▶</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- SCENE 1: COLD OPEN — Deep space, stars forming, title emerges    -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="scene active" id="s1">
+  <canvas id="c1"></canvas>
+  <div class="overlay" style="text-align:center;">
+    <div id="s1-sub" style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:rgba(0,228,255,0);letter-spacing:8px;text-transform:uppercase;margin-bottom:32px;transition:color 2s 1s;">Cal Poly Pomona · Reconfigurable Space Computing Lab</div>
+    <div id="s1-title" style="font-family:'Orbitron',sans-serif;font-size:72px;font-weight:900;color:rgba(255,255,255,0);letter-spacing:6px;line-height:1;text-shadow:0 0 60px rgba(0,228,255,0);transition:color 2s 0.5s, text-shadow 2s 0.5s;">EARTH<br>LOOKBACK</div>
+    <div id="s1-sim" style="font-family:'Orbitron',sans-serif;font-size:24px;font-weight:400;color:rgba(0,228,255,0);letter-spacing:24px;margin-top:16px;transition:color 2s 1.5s;">SIMULATOR</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- SCENE 2: THE QUESTION — What does Earth actually see?            -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="scene" id="s2">
+  <canvas id="c2"></canvas>
+  <div class="overlay" style="text-align:center;padding:80px;">
+    <div id="s2-q" style="font-family:'Exo 2',sans-serif;font-size:42px;font-weight:200;color:rgba(255,255,255,0);letter-spacing:2px;line-height:1.4;transition:color 1.5s 0.5s;">
+      If a civilization on<br>
+      <span style="color:rgba(0,228,255,0);font-weight:700;transition:color 1.5s 1s;" id="s2-planet">TRAPPIST-1 e</span><br>
+      sent us a signal today...
+    </div>
+    <div id="s2-ans" style="font-family:'IBM Plex Mono',monospace;font-size:20px;color:rgba(0,232,122,0);margin-top:48px;letter-spacing:3px;transition:color 1.5s 2.5s;">
+      what would Earth actually receive?
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- SCENE 3: THE DELAY — Light travel time visualization             -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="scene" id="s3">
+  <canvas id="c3"></canvas>
+  <div class="overlay" style="justify-content:flex-end;padding-bottom:80px;text-align:center;">
+    <div id="s3-num" style="font-family:'Orbitron',sans-serif;font-size:80px;font-weight:900;color:rgba(0,228,255,0);text-shadow:0 0 40px rgba(0,228,255,0.4);transition:color 1s 0.5s,text-shadow 1s 0.5s;">40.2</div>
+    <div id="s3-unit" style="font-family:'IBM Plex Mono',monospace;font-size:18px;color:rgba(255,255,255,0);letter-spacing:6px;margin-top:8px;transition:color 1s 1s;">LIGHT YEARS AWAY</div>
+    <div id="s3-math" style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:rgba(0,232,122,0);margin-top:24px;letter-spacing:2px;transition:color 1s 2s;">= 40.2 years of delay · The signal left before some of us were born</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- SCENE 4: PHYSICS ENGINES — Each effect revealed one by one      -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="scene" id="s4">
+  <canvas id="c4"></canvas>
+  <div class="overlay" style="flex-direction:row;align-items:stretch;padding:60px 80px;gap:40px;">
+    <div style="flex:0 0 340px;">
+      <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:rgba(0,228,255,0.6);letter-spacing:4px;margin-bottom:24px;">PHYSICS ENGINES</div>
+      <div id="s4-engines" style="display:flex;flex-direction:column;gap:12px;"></div>
+    </div>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+      <canvas id="c4b" width="600" height="400" style="position:relative;border-radius:12px;border:1px solid rgba(0,228,255,0.2);"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- SCENE 5: THE CANVAS — Step 3 God's eye view                     -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="scene" id="s5">
+  <canvas id="c5"></canvas>
+  <div class="overlay" style="justify-content:flex-start;padding:40px 60px;">
+    <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:rgba(0,228,255,0.6);letter-spacing:4px;margin-bottom:12px;opacity:0;animation:fadeIn 1s 0.5s forwards;">STEP 3 — UNIFIED COSMIC OBSERVER CANVAS</div>
+    <div style="font-family:'Exo 2',sans-serif;font-size:28px;font-weight:300;color:rgba(255,255,255,0.9);opacity:0;animation:fadeIn 1s 1s forwards;">Watch every physics effect<br>happening <span style="color:#00e4ff;font-weight:700;">simultaneously</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- SCENE 6: 62 PLANETS — Catalog showcase                          -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="scene" id="s6">
+  <canvas id="c6"></canvas>
+  <div class="overlay" style="flex-direction:row;align-items:center;padding:60px 100px;gap:80px;">
+    <div style="flex:0 0 400px;">
+      <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:rgba(0,228,255,0.6);letter-spacing:4px;margin-bottom:16px;opacity:0;animation:fadeIn 1s 0.3s forwards;">THE CATALOG</div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:88px;font-weight:900;color:#00e4ff;line-height:1;text-shadow:0 0 40px rgba(0,228,255,0.5);opacity:0;animation:fadeIn 1s 0.6s forwards;">62</div>
+      <div style="font-family:'Exo 2',sans-serif;font-size:22px;font-weight:300;color:rgba(255,255,255,0.8);margin-top:8px;opacity:0;animation:fadeIn 1s 0.9s forwards;">Confirmed Milky Way<br>exoplanets · Real measured data</div>
+      <div style="margin-top:32px;display:flex;flex-direction:column;gap:8px;opacity:0;animation:fadeIn 1s 1.4s forwards;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#00e87a;">21 in habitable zone</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#4fc3f7;">4.2 ly → 750 ly distance range</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#ce93d8;">8 planet types catalogued</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#ffe040;">Real v_r · μ · DM · mass · radius</div>
+      </div>
+    </div>
+    <div style="flex:1;display:flex;flex-wrap:wrap;gap:8px;align-content:center;" id="s6-planets"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- SCENE 7: BIOSIGNATURES — The science moment                      -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="scene" id="s7">
+  <canvas id="c7"></canvas>
+  <div class="overlay" style="text-align:center;padding:60px;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(0,232,122,0.7);letter-spacing:6px;margin-bottom:24px;opacity:0;animation:fadeIn 1s 0.3s forwards;">ATMOSPHERIC TRANSMISSION · JWST RANGE</div>
+    <div style="font-family:'Orbitron',sans-serif;font-size:48px;font-weight:700;color:rgba(255,255,255,0.95);line-height:1.2;opacity:0;animation:fadeIn 1s 0.6s forwards;">
+      The signature of life
+    </div>
+    <div style="font-family:'Exo 2',sans-serif;font-size:22px;font-weight:300;color:rgba(255,255,255,0.7);margin-top:16px;opacity:0;animation:fadeIn 1s 1s forwards;">
+      O₂ + O₃ + CH₄ in chemical disequilibrium
+    </div>
+    <div style="display:flex;gap:32px;margin-top:48px;justify-content:center;opacity:0;animation:fadeIn 1s 1.5s forwards;">
+      <div style="text-align:center;padding:20px 28px;background:rgba(0,232,122,0.1);border:1px solid rgba(0,232,122,0.4);border-radius:10px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:#00e87a;">O₂</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(0,232,122,0.7);margin-top:4px;">760nm A-band</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px;">Photosynthesis</div>
+      </div>
+      <div style="text-align:center;padding:20px 28px;background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.4);border-radius:10px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:#00c8ff;">O₃</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(0,200,255,0.7);margin-top:4px;">9.6μm band</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px;">UV Shield</div>
+      </div>
+      <div style="text-align:center;padding:20px 28px;background:rgba(192,132,252,0.1);border:1px solid rgba(192,132,252,0.4);border-radius:10px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:#c084fc;">CH₄</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(192,132,252,0.7);margin-top:4px;">3.3μm band</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:4px;">Biogenic</div>
+      </div>
+    </div>
+    <div style="margin-top:40px;font-family:'IBM Plex Mono',monospace;font-size:13px;color:rgba(0,232,122,0.8);opacity:0;animation:fadeIn 1s 2.2s forwards;">
+      🌱 TRAPPIST-1 e · TOI-700 e — flagged as biosignature candidates
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- SCENE 8: CALL TO ACTION — Final frame                           -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div class="scene" id="s8">
+  <canvas id="c8"></canvas>
+  <div class="overlay" style="text-align:center;">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(0,228,255,0.5);letter-spacing:6px;margin-bottom:32px;opacity:0;animation:fadeIn 1s 0.3s forwards;">OPEN SOURCE · FREE · REAL PHYSICS</div>
+    <div style="font-family:'Orbitron',sans-serif;font-size:64px;font-weight:900;color:#fff;letter-spacing:4px;text-shadow:0 0 60px rgba(0,228,255,0.4);opacity:0;animation:fadeIn 1.5s 0.6s forwards;">EARTH LOOKBACK<br><span style="color:#00e4ff;">SIMULATOR</span></div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:16px;color:rgba(255,255,255,0.6);margin-top:24px;letter-spacing:2px;opacity:0;animation:fadeIn 1s 1.5s forwards;">Designed by Dr. Mohamed El-Hadedy<br>Director, RSCL · Cal Poly Pomona</div>
+    <div style="margin-top:48px;opacity:0;animation:fadeIn 1s 2s forwards;">
+      <div style="display:inline-block;padding:16px 40px;background:rgba(0,228,255,0.15);border:2px solid rgba(0,228,255,0.6);border-radius:50px;font-family:'IBM Plex Mono',monospace;font-size:18px;color:#00e4ff;letter-spacing:2px;box-shadow:0 0 30px rgba(0,228,255,0.2);">
+        mealycpp.github.io/rscl-simulator
+      </div>
+    </div>
+    <div style="position:absolute;bottom:40px;left:0;right:0;display:flex;justify-content:center;gap:24px;opacity:0;animation:fadeIn 1s 2.8s forwards;">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(0,228,255,0.35);letter-spacing:3px;">AFRL COLLABORATION</span>
+      <span style="color:rgba(0,228,255,0.2);">·</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(0,228,255,0.35);letter-spacing:3px;">NASA COMPATIBLE</span>
+      <span style="color:rgba(0,228,255,0.2);">·</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(0,228,255,0.35);letter-spacing:3px;">CAL POLY POMONA</span>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+@keyframes pulse{0%,100%{opacity:0.6;}50%{opacity:1;}}
+@keyframes scanline{0%{transform:translateY(-100%);}100%{transform:translateY(100vh);}}
+</style>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// VIDEO ENGINE — auto-advancing scenes with canvas animations
+// ═══════════════════════════════════════════════════════════════════
+
+const TOTAL_DURATION = 90000; // 90 seconds total
+const scenes = [
+  { id:'s1', duration:8000,  label:'COLD OPEN' },
+  { id:'s2', duration:8000,  label:'THE QUESTION' },
+  { id:'s3', duration:9000,  label:'LIGHT TRAVEL' },
+  { id:'s4', duration:14000, label:'PHYSICS ENGINES' },
+  { id:'s5', duration:14000, label:'THE CANVAS' },
+  { id:'s6', duration:10000, label:'62 PLANETS' },
+  { id:'s7', duration:12000, label:'BIOSIGNATURES' },
+  { id:'s8', duration:15000, label:'CALL TO ACTION' },
+];
+
+let currentScene = 0;
+let sceneStart = Date.now();
+let totalStart = Date.now();
+let rafId;
+
+// ── SCENE CONTROLLER ─────────────────────────────────────────────
+function showScene(idx) {
+  document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+  document.getElementById(scenes[idx].id).classList.add('active');
+  document.getElementById('scene-label').textContent = `SCENE ${idx+1} / ${scenes.length}  ·  ${scenes[idx].label}`;
+  sceneStart = Date.now();
+  initScene(idx);
+}
+
+function tick() {
+  const now = Date.now();
+  const totalElapsed = now - totalStart;
+  const sceneElapsed = now - sceneStart;
+  const pct = Math.min(100, (totalElapsed / TOTAL_DURATION) * 100);
+  document.getElementById('progress-bar').style.width = pct + '%';
+
+  if (sceneElapsed >= scenes[currentScene].duration && currentScene < scenes.length - 1) {
+    currentScene++;
+    showScene(currentScene);
+  }
+  rafId = requestAnimationFrame(tick);
+}
+
+function skipToEnd() {
+  currentScene = scenes.length - 1;
+  showScene(currentScene);
+}
+
+// ── CANVAS HELPERS ────────────────────────────────────────────────
+function setupCanvas(id) {
+  const c = document.getElementById(id);
+  if (!c) return null;
+  c.width = 1280; c.height = 720;
+  return c.getContext('2d');
+}
+
+function drawStars(ctx, W, H, count, t, parallax=0) {
+  const rng = (s) => { let x=Math.sin(s)*43758.5453; return x-Math.floor(x); };
+  for(let i=0;i<count;i++) {
+    const x = (rng(i*3.1+1)*W + parallax*rng(i)*0.05*t) % W;
+    const y = rng(i*7.3+2)*H;
+    const r = rng(i*11.7+3)*1.2+0.2;
+    const a = 0.3+0.5*(0.5+0.5*Math.sin(t*rng(i*5+4)*0.8+rng(i*9)*Math.PI*2));
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(${180+rng(i*13)*60},${200+rng(i*17)*40},255,${a})`;
+    ctx.fill();
+  }
+}
+
+function drawNebula(ctx, x, y, r, col, alpha) {
+  const g = ctx.createRadialGradient(x,y,0,x,y,r);
+  g.addColorStop(0,col.replace('A',alpha));
+  g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SCENE ANIMATIONS
+// ══════════════════════════════════════════════════════════════════
+
+const animators = {};
+let activeAnimators = {};
+
+function initScene(idx) {
+  // Cancel previous
+  Object.values(activeAnimators).forEach(id => cancelAnimationFrame(id));
+  activeAnimators = {};
+
+  const fns = [s1, s2, s3, s4, s5, s6, s7, s8];
+  if (fns[idx]) fns[idx]();
+}
+
+// ── SCENE 1: Cold open — stars coalescing, title fades in ─────────
+function s1() {
+  const ctx = setupCanvas('c1');
+  if(!ctx) return;
+  const t0 = Date.now();
+  const el_title = document.getElementById('s1-title');
+  const el_sub   = document.getElementById('s1-sub');
+  const el_sim   = document.getElementById('s1-sim');
+  let triggered = false;
+
+  function draw() {
+    const t = (Date.now()-t0)/1000;
+    const W=1280,H=720;
+    ctx.fillStyle='rgba(0,0,0,0.12)'; ctx.fillRect(0,0,W,H);
+    drawNebula(ctx,W*0.3,H*0.5,400,'rgba(0,20,80,A)',0.06);
+    drawNebula(ctx,W*0.7,H*0.4,350,'rgba(20,0,60,A)',0.05);
+    drawStars(ctx,W,H,300,t);
+
+    // Scanline effect
+    const scanY = ((t*120)%H);
+    ctx.fillStyle='rgba(0,228,255,0.015)'; ctx.fillRect(0,scanY,W,2);
+
+    if(t>0.5 && !triggered) {
+      triggered=true;
+      el_title.style.color='rgba(255,255,255,0.95)';
+      el_title.style.textShadow='0 0 60px rgba(0,228,255,0.6)';
+      el_sub.style.color='rgba(0,228,255,0.7)';
+      el_sim.style.color='rgba(0,228,255,0.9)';
+    }
+    // Glitch flash occasionally
+    if(Math.sin(t*7.3)>0.98) {
+      ctx.fillStyle='rgba(0,228,255,0.04)'; ctx.fillRect(0,0,W,H);
+    }
+
+    activeAnimators.s1 = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ── SCENE 2: The question ─────────────────────────────────────────
+function s2() {
+  const ctx = setupCanvas('c2');
+  if(!ctx) return;
+  const t0 = Date.now();
+  let t1=false,t2=false,t3=false;
+
+  function draw() {
+    const t=(Date.now()-t0)/1000;
+    const W=1280,H=720;
+    ctx.fillStyle='rgba(0,2,12,0.15)'; ctx.fillRect(0,0,W,H);
+    drawNebula(ctx,W*0.5,H*0.5,500,'rgba(0,10,50,A)',0.08);
+    drawStars(ctx,W,H,250,t);
+
+    // TRAPPIST-1 e planet slowly drifting
+    const px=W*0.75+Math.sin(t*0.3)*20, py=H*0.45+Math.cos(t*0.2)*15;
+    for(let r=80;r>0;r-=8) {
+      ctx.beginPath(); ctx.arc(px,py,r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(41,182,246,${0.03*(80-r)/80})`;ctx.fill();
+    }
+    ctx.beginPath(); ctx.arc(px,py,28,0,Math.PI*2);
+    const pg=ctx.createRadialGradient(px-8,py-8,2,px,py,28);
+    pg.addColorStop(0,'rgba(140,220,255,0.9)'); pg.addColorStop(0.4,'#1a6fbb'); pg.addColorStop(1,'rgba(0,20,60,0.9)');
+    ctx.fillStyle=pg; ctx.fill();
+    // Biosig ring
+    ctx.beginPath(); ctx.arc(px,py,34+3*Math.sin(t*2),0,Math.PI*2);
+    ctx.strokeStyle=`rgba(0,232,122,${0.4+0.2*Math.sin(t*2)})`; ctx.lineWidth=1.5; ctx.stroke();
+
+    if(t>0.5&&!t1){t1=true;document.getElementById('s2-q').style.color='rgba(255,255,255,0.92)';}
+    if(t>1&&!t2){t2=true;document.getElementById('s2-planet').style.color='rgba(0,228,255,1)';}
+    if(t>2.5&&!t3){t3=true;document.getElementById('s2-ans').style.color='rgba(0,232,122,0.9)';}
+
+    activeAnimators.s2 = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ── SCENE 3: Light travel — photon shooting across screen ─────────
+function s3() {
+  const ctx = setupCanvas('c3');
+  if(!ctx) return;
+  const t0=Date.now();
+  let t1=false,t2=false,t3=false;
+
+  function draw() {
+    const t=(Date.now()-t0)/1000;
+    const W=1280,H=720;
+    ctx.fillStyle='rgba(0,0,8,0.18)'; ctx.fillRect(0,0,W,H);
+    drawStars(ctx,W,H,400,t);
+    drawNebula(ctx,W*0.2,H*0.6,300,'rgba(10,0,50,A)',0.08);
+
+    // Light travel line
+    const progress = Math.min(1, t/5);
+    const startX=80, endX=W-80, lineY=H*0.45;
+    // Planet left
+    const pG=ctx.createRadialGradient(startX,lineY,0,startX,lineY,24);
+    pG.addColorStop(0,'rgba(120,200,255,0.9)'); pG.addColorStop(0.4,'#1a6fbb'); pG.addColorStop(1,'rgba(0,10,40,0.9)');
+    ctx.beginPath(); ctx.arc(startX,lineY,24,0,Math.PI*2); ctx.fillStyle=pG; ctx.fill();
+    ctx.font='bold 11px "IBM Plex Mono"'; ctx.fillStyle='rgba(79,195,247,0.7)'; ctx.textAlign='center';
+    ctx.fillText('TRAPPIST-1 e',startX,lineY+38);
+
+    // Earth right
+    const eG=ctx.createRadialGradient(endX,lineY,0,endX,lineY,22);
+    eG.addColorStop(0,'rgba(140,215,255,0.9)'); eG.addColorStop(0.3,'#1a6fbb'); eG.addColorStop(1,'rgba(0,6,40,0.9)');
+    ctx.beginPath(); ctx.arc(endX,lineY,22,0,Math.PI*2); ctx.fillStyle=eG; ctx.fill();
+    ctx.fillStyle='rgba(79,195,247,0.7)'; ctx.textAlign='center';
+    ctx.fillText('EARTH',endX,lineY+36);
+
+    // Dashed path
+    ctx.setLineDash([6,12]); ctx.strokeStyle='rgba(0,200,255,0.12)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(startX+26,lineY); ctx.lineTo(endX-24,lineY); ctx.stroke(); ctx.setLineDash([]);
+
+    // Photon
+    const photonX = startX+26 + (endX-startX-50)*progress;
+    if(progress<1) {
+      // Wave trail
+      for(let wx=startX+26;wx<photonX;wx+=3) {
+        const d=photonX-wx; const ds=wx-(startX+26);
+        const fade=Math.min(ds/40,1)*Math.min(d/30,1);
+        const wy=lineY+Math.sin((wx/40)*Math.PI*2-t*5)*10*fade;
+        if(wx>startX+27){ctx.lineTo(wx,wy);}else{ctx.moveTo(wx,wy);}
+      }
+      ctx.strokeStyle='rgba(0,228,255,0.8)'; ctx.lineWidth=2; ctx.beginPath();
+      for(let wx=startX+26;wx<photonX;wx+=3) {
+        const d=photonX-wx; const ds=wx-(startX+26);
+        const fade=Math.min(ds/40,1)*Math.min(d/30,1);
+        const wy=lineY+Math.sin((wx/40)*Math.PI*2-t*5)*10*fade;
+        wx===startX+26?ctx.moveTo(wx,wy):ctx.lineTo(wx,wy);
+      }
+      ctx.stroke();
+      // Photon head
+      const phG=ctx.createRadialGradient(photonX,lineY,0,photonX,lineY,14);
+      phG.addColorStop(0,'rgba(255,255,255,1)');
+      phG.addColorStop(0.3,'rgba(0,228,255,0.95)');
+      phG.addColorStop(1,'rgba(0,200,255,0)');
+      ctx.fillStyle=phG; ctx.beginPath(); ctx.arc(photonX,lineY,14,0,Math.PI*2); ctx.fill();
+    }
+
+    // Year counter
+    const years = (40.2*progress).toFixed(1);
+    ctx.font='bold 16px "IBM Plex Mono"'; ctx.fillStyle='rgba(0,228,255,0.7)'; ctx.textAlign='center';
+    ctx.fillText(`${years} light-years traveled`, (startX+endX)/2, lineY-30);
+
+    // Bottom stats fade in
+    if(t>1&&!t1){t1=true;document.getElementById('s3-num').style.color='rgba(0,228,255,0.95)';document.getElementById('s3-num').style.textShadow='0 0 40px rgba(0,228,255,0.6)';}
+    if(t>2&&!t2){t2=true;document.getElementById('s3-unit').style.color='rgba(255,255,255,0.8)';}
+    if(t>3.5&&!t3){t3=true;document.getElementById('s3-math').style.color='rgba(0,232,122,0.85)';}
+
+    activeAnimators.s3=requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ── SCENE 4: Physics engines revealed ────────────────────────────
+function s4() {
+  const ctx = setupCanvas('c4');
+  const ctx4b = document.getElementById('c4b').getContext('2d');
+  if(!ctx||!ctx4b) return;
+  const t0=Date.now();
+
+  const engines=[
+    {icon:'〜',name:'Relativistic Doppler',formula:'f·√((1+β)/(1−β))',color:'#4fc3f7',delay:0.4},
+    {icon:'⭐',name:'Stellar Aberration',formula:'θ_max = 20.495″',color:'#ffe040',delay:1.0},
+    {icon:'📡',name:'ISM Dispersion',formula:'Δt = 4.15ms·DM·f⁻²',color:'#00c8ff',delay:1.6},
+    {icon:'⚡',name:'Special Relativity',formula:'γ = 1/√(1−β²)',color:'#c084fc',delay:2.2},
+    {icon:'🌌',name:'General Relativity',formula:'√(1 − 2GM/rc²)',color:'#80cbc4',delay:2.8},
+    {icon:'🔭',name:'Cosmological z',formula:'z = H₀·d/c',color:'#6ab4ff',delay:3.4},
+    {icon:'🌡',name:'Atmospheric Tx',formula:'O₂+O₃+CH₄ biosigs',color:'#00e87a',delay:4.0},
+  ];
+
+  const container=document.getElementById('s4-engines');
+  container.innerHTML='';
+  const els=engines.map((e,i)=>{
+    const div=document.createElement('div');
+    div.style.cssText=`display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.06);opacity:0;transform:translateX(-20px);transition:opacity 0.5s,transform 0.5s;`;
+    div.innerHTML=`<span style="font-size:16px">${e.icon}</span><div><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;color:${e.color};">${e.name}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(255,255,255,0.4);margin-top:2px;">${e.formula}</div></div><div style="margin-left:auto;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;background:rgba(0,232,122,0.15);color:#00e87a;border:1px solid rgba(0,232,122,0.3);">✓</div>`;
+    container.appendChild(div);
+    return {el:div, delay:e.delay, color:e.color, revealed:false};
+  });
+
+  function draw() {
+    const t=(Date.now()-t0)/1000;
+    const W=1280,H=720;
+    ctx.fillStyle='rgba(0,2,10,0.2)'; ctx.fillRect(0,0,W,H);
+    drawStars(ctx,W,H,200,t);
+
+    // Reveal engines
+    els.forEach(e=>{
+      if(t>e.delay&&!e.revealed){
+        e.revealed=true;
+        e.el.style.opacity='1'; e.el.style.transform='translateX(0)';
+        e.el.style.borderColor=e.color+'44';
+        e.el.style.background=`${e.color}10`;
+      }
+    });
+
+    // Mini canvas — animated signal
+    const W2=600,H2=400;
+    ctx4b.fillStyle='rgba(0,5,15,0.3)'; ctx4b.fillRect(0,0,W2,H2);
+    for(let i=0;i<80;i++){
+      const sx=(Math.sin(i*3.7)*0.5+0.5)*W2;
+      const sy=(Math.sin(i*7.1)*0.5+0.5)*H2*0.6;
+      const a=0.3+0.4*Math.sin(t*0.5+i);
+      ctx4b.beginPath(); ctx4b.arc(sx,sy,0.6,0,Math.PI*2);
+      ctx4b.fillStyle=`rgba(180,210,255,${a})`; ctx4b.fill();
+    }
+    const MY=H2*0.42, PX=60, EX=W2-60, SP=EX-PX;
+    const sigX=PX+SP*((t*0.12)%1);
+
+    // Planet
+    ctx4b.beginPath(); ctx4b.arc(PX,MY,18,0,Math.PI*2);
+    const pG2=ctx4b.createRadialGradient(PX-5,MY-5,2,PX,MY,18);
+    pG2.addColorStop(0,'rgba(140,215,255,0.9)'); pG2.addColorStop(0.4,'#1a6fbb'); pG2.addColorStop(1,'rgba(0,10,40,0.9)');
+    ctx4b.fillStyle=pG2; ctx4b.fill();
+    ctx4b.beginPath(); ctx4b.arc(PX,MY,22+2*Math.sin(t*3),0,Math.PI*2);
+    ctx4b.strokeStyle=`rgba(0,232,122,${0.4+0.2*Math.sin(t*3)})`; ctx4b.lineWidth=1.5; ctx4b.stroke();
+
+    // EM wave
+    ctx4b.beginPath(); let fw=true;
+    for(let wx=Math.max(PX,sigX-200);wx<=sigX;wx+=2){
+      const d=sigX-wx; const ds=wx-Math.max(PX,sigX-200);
+      const fv=Math.min(ds/30,1)*Math.min(d/20,1);
+      const wy=MY+Math.sin((wx/36)*Math.PI*2-t*4)*12*fv;
+      fw?ctx4b.moveTo(wx,wy):ctx4b.lineTo(wx,wy); fw=false;
+    }
+    ctx4b.strokeStyle='rgba(0,228,255,0.85)'; ctx4b.lineWidth=2; ctx4b.stroke();
+
+    // Photon
+    const phG2=ctx4b.createRadialGradient(sigX,MY,0,sigX,MY,12);
+    phG2.addColorStop(0,'rgba(255,255,255,1)'); phG2.addColorStop(0.3,'rgba(0,228,255,0.9)'); phG2.addColorStop(1,'rgba(0,200,255,0)');
+    ctx4b.fillStyle=phG2; ctx4b.beginPath(); ctx4b.arc(sigX,MY,12,0,Math.PI*2); ctx4b.fill();
+
+    // Earth
+    ctx4b.beginPath(); ctx4b.arc(EX,MY,18,0,Math.PI*2);
+    const eG2=ctx4b.createRadialGradient(EX-5,MY-5,2,EX,MY,18);
+    eG2.addColorStop(0,'rgba(140,215,255,0.9)'); eG2.addColorStop(0.3,'#1a6fbb'); eG2.addColorStop(1,'rgba(0,6,40,0.9)');
+    ctx4b.fillStyle=eG2; ctx4b.fill();
+
+    activeAnimators.s4=requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ── SCENE 5: The unified canvas ──────────────────────────────────
+function s5() {
+  const ctx=setupCanvas('c5');
+  if(!ctx) return;
+  const t0=Date.now();
+
+  function draw() {
+    const t=(Date.now()-t0)/1000;
+    const W=1280,H=720;
+    // Deep space background
+    ctx.fillStyle='rgba(0,2,12,0.22)'; ctx.fillRect(0,0,W,H);
+    drawNebula(ctx,W*0.15,H*0.4,300,'rgba(10,0,60,A)',0.1);
+    drawNebula(ctx,W*0.85,H*0.5,280,'rgba(0,15,60,A)',0.08);
+    drawStars(ctx,W,H,350,t);
+
+    // Layout zones
+    const SPACE_H=H*0.58, FX_H=60, SOLAR_H=H-SPACE_H-FX_H;
+    const SOL_Y=SPACE_H; const FX_Y=SOL_Y+SOLAR_H;
+
+    // Signal travel
+    const MY=SPACE_H*0.42, PX=120, EX=W-120, SP=EX-PX;
+    const sigX=PX+SP*(((t*0.08)%1));
+
+    // HOST STAR
+    const SX=PX-55,SY=MY-25;
+    for(let r=22;r>0;r-=3){const a=30*(r/22);ctx.ellipse?void 0:null;ctx.beginPath();ctx.arc(SX,SY,r,0,Math.PI*2);ctx.fillStyle=`rgba(${Math.min(255,180+a*4)},${Math.min(255,100+a*2)},0,1)`;ctx.fill();}
+    ctx.beginPath();ctx.arc(SX,SY,5,0,Math.PI*2);ctx.fillStyle='rgba(255,255,220,1)';ctx.fill();
+    for(let i=0;i<8;i++){const ang=i/8*Math.PI*2;ctx.beginPath();ctx.moveTo(SX+Math.cos(ang)*7,SY+Math.sin(ang)*7);ctx.lineTo(SX+Math.cos(ang)*16,SY+Math.sin(ang)*16);ctx.strokeStyle='rgba(255,210,70,0.4)';ctx.lineWidth=1;ctx.stroke();}
+
+    // PLANET with glow
+    for(let r=40;r>18;r-=5){ctx.beginPath();ctx.arc(PX,MY,r,0,Math.PI*2);ctx.fillStyle=`rgba(41,182,246,${0.04*(40-r)/22})`;ctx.fill();}
+    const pG=ctx.createRadialGradient(PX-6,MY-6,2,PX,MY,20);
+    pG.addColorStop(0,'rgba(140,215,255,0.9)');pG.addColorStop(0.4,'#1a6fbb');pG.addColorStop(1,'rgba(0,10,40,0.9)');
+    ctx.beginPath();ctx.arc(PX,MY,20,0,Math.PI*2);ctx.fillStyle=pG;ctx.fill();
+    ctx.beginPath();ctx.arc(PX,MY,25+2*Math.sin(t*2.5),0,Math.PI*2);ctx.strokeStyle=`rgba(0,232,122,${0.45+0.2*Math.sin(t*2.5)})`;ctx.lineWidth=1.5;ctx.stroke();
+    ctx.beginPath();ctx.arc(PX,MY,23,0,Math.PI*2);ctx.strokeStyle='rgba(41,182,246,0.5)';ctx.lineWidth=2;ctx.stroke();
+    ctx.font='bold 10px "IBM Plex Mono"';ctx.fillStyle='rgba(79,195,247,0.7)';ctx.textAlign='center';ctx.fillText('TRAPPIST-1 e',PX,MY+40);
+
+    // EM WAVE
+    ctx.beginPath();let fw2=true;
+    for(let wx=Math.max(PX+22,sigX-300);wx<=sigX;wx+=2){
+      const d=sigX-wx;const ds=wx-Math.max(PX+22,sigX-300);
+      const fv=Math.min(ds/35,1)*Math.min(d/25,1);
+      const wy=MY+Math.sin((wx/40)*Math.PI*2-t*4)*13*fv;
+      fw2?ctx.moveTo(wx,wy):ctx.lineTo(wx,wy);fw2=false;
+    }
+    ctx.strokeStyle='rgba(0,228,255,0.85)';ctx.lineWidth=2;ctx.stroke();
+
+    // ISM ghosts
+    [[25,'rgba(0,200,255,0.55)','L'],[60,'rgba(192,132,252,0.5)','P'],[110,'rgba(255,96,96,0.45)','HF']].forEach(([lag,col,lbl])=>{
+      const rx=Math.max(PX+22,sigX-lag);
+      ctx.beginPath();ctx.arc(rx,MY+16,4,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
+      ctx.font='7px "IBM Plex Mono"';ctx.fillStyle=col;ctx.textAlign='center';ctx.fillText(lbl,rx,MY+28);
+    });
+
+    // PHOTON HEAD
+    const phG=ctx.createRadialGradient(sigX,MY,0,sigX,MY,14);
+    phG.addColorStop(0,'rgba(255,255,255,1)');phG.addColorStop(0.3,'rgba(0,228,255,0.95)');phG.addColorStop(1,'rgba(0,200,255,0)');
+    ctx.fillStyle=phG;ctx.beginPath();ctx.arc(sigX,MY,14,0,Math.PI*2);ctx.fill();
+    [8,13,19].forEach(r=>{ctx.beginPath();ctx.arc(sigX,MY,r,0,Math.PI*2);ctx.strokeStyle=`rgba(0,232,255,${0.5-r*0.018})`;ctx.lineWidth=1.2;ctx.stroke();});
+
+    // SR CLOCKS
+    [[W*0.38,(t*0.5)%(Math.PI*2),'rgba(79,195,247,0.9)','t'],[W*0.38+52,(t*0.4999)%(Math.PI*2),'rgba(192,132,252,0.9)','τ']].forEach(([cx,secA,col,lbl])=>{
+      const cy=SPACE_H*0.22,cr=16;
+      ctx.beginPath();ctx.arc(cx,cy,cr,0,Math.PI*2);ctx.fillStyle='rgba(0,4,16,0.9)';ctx.fill();ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.stroke();
+      for(let i=0;i<12;i++){const a=i/12*Math.PI*2;ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*cr*0.75,cy+Math.sin(a)*cr*0.75);ctx.lineTo(cx+Math.cos(a)*cr*0.9,cy+Math.sin(a)*cr*0.9);ctx.strokeStyle=col.replace('0.9','0.3');ctx.lineWidth=0.7;ctx.stroke();}
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(secA-Math.PI/2)*cr*0.8,cy+Math.sin(secA-Math.PI/2)*cr*0.8);ctx.strokeStyle=col;ctx.lineWidth=1.2;ctx.stroke();
+      ctx.beginPath();ctx.arc(cx,cy,2,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
+      ctx.font='7px "IBM Plex Mono"';ctx.fillStyle=col;ctx.textAlign='center';ctx.fillText(lbl,cx,cy+cr+10);
+    });
+    ctx.font='7px "IBM Plex Mono"';ctx.fillStyle='rgba(200,200,255,0.35)';ctx.textAlign='center';ctx.fillText('SR Dilation',W*0.38+26,SPACE_H*0.22-18);
+
+    // EARTH
+    for(let r=80;r>20;r-=10){ctx.beginPath();ctx.arc(EX,MY,r,0,Math.PI*2);ctx.fillStyle=`rgba(0,30,100,${0.04*(1-r/80)})`; ctx.fill();}
+    const eG=ctx.createRadialGradient(EX-8,MY-8,2,EX,MY,22);
+    eG.addColorStop(0,'rgba(140,215,255,0.95)');eG.addColorStop(0.25,'#1a6fbb');eG.addColorStop(0.65,'#0d47a1');eG.addColorStop(1,'rgba(0,6,40,0.95)');
+    ctx.beginPath();ctx.arc(EX,MY,22,0,Math.PI*2);ctx.fillStyle=eG;ctx.fill();
+    ctx.beginPath();ctx.arc(EX,MY,28,0,Math.PI*2);ctx.strokeStyle='rgba(79,195,247,0.2)';ctx.lineWidth=2;ctx.stroke();
+    ctx.font='bold 10px "IBM Plex Mono"';ctx.fillStyle='rgba(79,195,247,0.8)';ctx.textAlign='center';ctx.fillText('EARTH',EX,MY+38);
+
+    // SOLAR SYSTEM STRIP
+    ctx.fillStyle='rgba(0,4,14,0.8)';ctx.fillRect(0,SOL_Y,W,SOLAR_H);
+    ctx.strokeStyle='rgba(0,180,255,0.3)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,SOL_Y);ctx.lineTo(W,SOL_Y);ctx.stroke();
+    ctx.font='7px "IBM Plex Mono"';ctx.fillStyle='rgba(0,180,255,0.35)';ctx.textAlign='center';
+    ctx.fillText('— ECLIPTIC PLANE  ·  GOD\'S EYE VIEW —',W/2,SOL_Y+10);
+
+    // Sun + Earth orbit
+    const SCY=SOL_Y+SOLAR_H/2, SSX=W*0.18, ORB=42;
+    for(let r=14;r>4;r-=2){ctx.beginPath();ctx.arc(SSX,SCY,r,0,Math.PI*2);ctx.fillStyle=`rgba(${Math.min(255,200+r*4)},${Math.min(255,130+r)},0,1)`;ctx.fill();}
+    for(let deg=0;deg<360;deg+=6){ctx.beginPath();ctx.arc(SSX+Math.cos(deg*Math.PI/180)*ORB,SCY+Math.sin(deg*Math.PI/180)*ORB,0.5,0,Math.PI*2);ctx.fillStyle='rgba(0,150,255,0.2)';ctx.fill();}
+    const ep=t*0.5; const EOX=SSX+Math.cos(ep)*ORB; const EOY=SCY+Math.sin(ep)*ORB;
+    ctx.beginPath();ctx.arc(EOX,EOY,5,0,Math.PI*2);ctx.fillStyle='rgba(79,195,247,0.9)';ctx.fill();
+    const va=ep+Math.PI/2;ctx.beginPath();ctx.moveTo(EOX,EOY);ctx.lineTo(EOX+Math.cos(va)*14,EOY+Math.sin(va)*14);ctx.strokeStyle='rgba(0,220,255,0.85)';ctx.lineWidth=1.8;ctx.stroke();
+
+    // Aberration ellipse
+    const ASTX=W*0.52,ASTY=SCY,AX=55,AY=18;
+    ctx.beginPath();ctx.ellipse(ASTX,ASTY,AX,AY,0,0,Math.PI*2);ctx.strokeStyle='rgba(255,220,50,0.18)';ctx.lineWidth=0.8;ctx.setLineDash([2,5]);ctx.stroke();ctx.setLineDash([]);
+    ctx.beginPath();ctx.arc(ASTX,ASTY,5,0,Math.PI*2);ctx.fillStyle='rgba(255,255,220,0.95)';ctx.fill();
+    const APX=ASTX+Math.cos(ep)*AX,APY=ASTY+Math.sin(ep)*AY;
+    for(let r=14;r>5;r-=3){ctx.beginPath();ctx.arc(APX,APY,r,0,Math.PI*2);ctx.fillStyle='rgba(255,220,50,0.04)';ctx.fill();}
+    ctx.beginPath();ctx.arc(APX,APY,6,0,Math.PI*2);ctx.fillStyle='rgba(255,220,50,0.9)';ctx.fill();
+    ctx.beginPath();ctx.moveTo(ASTX,ASTY);ctx.lineTo(APX,APY);ctx.strokeStyle='rgba(255,220,50,0.7)';ctx.lineWidth=2;ctx.stroke();
+
+    // FX STRIP
+    ctx.fillStyle='rgba(0,0,10,0.7)';ctx.fillRect(0,FX_Y,W,FX_H);
+    ctx.strokeStyle='rgba(0,200,255,0.3)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,FX_Y);ctx.lineTo(W,FX_Y);ctx.stroke();
+    const fx=[['ATM','N₂/O₂','rgba(0,232,122,0.95)'],['DOPPLER','-56km/s','rgba(96,184,255,0.95)'],['GR','2.5e-10','rgba(128,203,196,0.95)'],['SR γ','1+5e-9','rgba(192,132,252,0.95)'],['ISM DM','0.249','rgba(0,228,255,0.95)'],['SNR','92%','rgba(0,232,122,0.95)'],['COSMO','z=5e-9','rgba(128,184,255,0.95)']];
+    const fw=W/7;
+    fx.forEach(([lbl,val,col],i)=>{
+      const cx=i*fw+fw/2;
+      ctx.fillStyle='rgba(0,0,0,0.4)';ctx.beginPath();ctx.roundRect(cx-fw/2+3,FX_Y+4,fw-6,FX_H-8,5);ctx.fill();
+      ctx.font='bold 9px "IBM Plex Mono"';ctx.fillStyle='rgba(168,200,232,0.65)';ctx.textAlign='center';ctx.fillText(lbl,cx,FX_Y+16);
+      ctx.font='bold 11px "IBM Plex Mono"';ctx.fillStyle=col;ctx.fillText(val,cx,FX_Y+32);
+    });
+
+    activeAnimators.s5=requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ── SCENE 6: 62 Planets ──────────────────────────────────────────
+function s6() {
+  const ctx=setupCanvas('c6');
+  if(!ctx) return;
+  const t0=Date.now();
+
+  const planets=[
+    {name:'Proxima b',col:'#fff176',r:8},{name:'TRAPPIST-1e',col:'#4fc3f7',r:8},
+    {name:'Barnard b',col:'#ef9a9a',r:9},{name:'Kepler-452b',col:'#ffab91',r:10},
+    {name:'TOI-700d',col:'#a5d6a7',r:8},{name:'Kepler-22b',col:'#ce93d8',r:10},
+    {name:'HD209458b',col:'#ff7043',r:13},{name:'WASP-17b',col:'#ff5722',r:15},
+    {name:'K2-18b',col:'#80deea',r:10},{name:'LHS-1140b',col:'#fff176',r:9},
+    {name:'GJ-1214b',col:'#4dd0e1',r:11},{name:'Kepler-186f',col:'#81c784',r:8},
+    {name:'51-Peg-b',col:'#ffb74d',r:13},{name:'KELT-9b',col:'#ff3d00',r:14},
+    {name:'Beta-Pic-b',col:'#ffd54f',r:14},{name:'HR-8799b',col:'#a1887f',r:15},
+    {name:'55-Cnc-e',col:'#ff8a65',r:9},{name:'Kepler-62e',col:'#9fa8da',r:9},
+    {name:'TOI-700e',col:'#80cbc4',r:8},{name:'Kepler-442b',col:'#b39ddb',r:9},
+  ];
+
+  const container=document.getElementById('s6-planets');
+  container.innerHTML='';
+  planets.forEach((p,i)=>{
+    const div=document.createElement('div');
+    div.style.cssText=`display:flex;flex-direction:column;align-items:center;gap:4px;opacity:0;transform:scale(0.5);transition:opacity 0.4s ${i*0.08}s,transform 0.4s ${i*0.08}s;`;
+    div.innerHTML=`<div style="width:${p.r*2}px;height:${p.r*2}px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(255,255,255,0.3),${p.col});box-shadow:0 0 ${p.r*2}px ${p.col}66;"></div><div style="font-family:'IBM Plex Mono',monospace;font-size:7px;color:rgba(255,255,255,0.45);white-space:nowrap;">${p.name}</div>`;
+    container.appendChild(div);
+    setTimeout(()=>{div.style.opacity='1';div.style.transform='scale(1)';},i*80+400);
+  });
+
+  function draw() {
+    const t=(Date.now()-t0)/1000;
+    const W=1280,H=720;
+    ctx.fillStyle='rgba(0,2,10,0.2)'; ctx.fillRect(0,0,W,H);
+    drawStars(ctx,W,H,300,t);
+    drawNebula(ctx,W*0.6,H*0.5,400,'rgba(5,0,40,A)',0.12);
+
+    activeAnimators.s6=requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ── SCENE 7: Biosignatures ────────────────────────────────────────
+function s7() {
+  const ctx=setupCanvas('c7');
+  if(!ctx) return;
+  const t0=Date.now();
+
+  function draw() {
+    const t=(Date.now()-t0)/1000;
+    const W=1280,H=720;
+    ctx.fillStyle='rgba(0,5,10,0.2)'; ctx.fillRect(0,0,W,H);
+    drawNebula(ctx,W*0.5,H*0.5,500,'rgba(0,20,10,A)',0.12);
+    drawStars(ctx,W,H,250,t);
+
+    // Spectrum bar background
+    const SBX=80,SBY=H-90,SBW=W-160,SBH=20;
+    const cs2=[[123,0,255],[68,0,255],[0,0,255],[0,128,255],[0,255,255],[0,255,128],[128,255,0],[255,255,0],[255,128,0],[255,0,0]];
+    const sw=SBW/cs2.length;
+    cs2.forEach((c,i)=>{ctx.fillStyle=`rgb(${c[0]},${c[1]},${c[2]})`;ctx.fillRect(SBX+i*sw,SBY,sw,SBH);});
+
+    // Absorption dips for O2 (760nm = ~70%), O3 (vis=~55%), CH4 (IR far)
+    [[0.44,'#00e87a','O₂ 760nm'],[0.30,'#00c8ff','O₃'],[0.85,'#c084fc','CH₄']].forEach(([pct,col,lbl])=>{
+      const bx=SBX+SBW*pct;
+      // Dip animation
+      const dipH=SBH*(0.7+0.2*Math.sin(t*1.5));
+      ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.fillRect(bx-4,SBY,8,dipH);
+      ctx.strokeStyle=col; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(bx,SBY-4); ctx.lineTo(bx,SBY+SBH+30);ctx.stroke();
+      ctx.font='bold 10px "IBM Plex Mono"'; ctx.fillStyle=col; ctx.textAlign='center';
+      ctx.fillText(lbl,bx,SBY+SBH+44);
+      // Pulsing glow
+      ctx.beginPath(); ctx.arc(bx,SBY-10,5+3*Math.sin(t*2),0,Math.PI*2);
+      ctx.fillStyle=col.replace(')',`,${0.4+0.3*Math.sin(t*2)})`).replace('#','rgba('+parseInt(col.slice(1,3),16)+','+parseInt(col.slice(3,5),16)+','+parseInt(col.slice(5,7),16)+',');
+      // Simpler:
+      ctx.fillStyle=col; ctx.globalAlpha=0.4+0.3*Math.sin(t*2); ctx.fill(); ctx.globalAlpha=1;
+    });
+
+    ctx.font='10px "IBM Plex Mono"';ctx.fillStyle='rgba(255,255,255,0.25)';ctx.textAlign='left';ctx.fillText('400nm',SBX,SBY+SBH+14);
+    ctx.textAlign='right';ctx.fillText('700nm+',SBX+SBW,SBY+SBH+14);
+
+    activeAnimators.s7=requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ── SCENE 8: Call to action ───────────────────────────────────────
+function s8() {
+  const ctx=setupCanvas('c8');
+  if(!ctx) return;
+  const t0=Date.now();
+
+  function draw() {
+    const t=(Date.now()-t0)/1000;
+    const W=1280,H=720;
+    ctx.fillStyle='rgba(0,0,8,0.18)'; ctx.fillRect(0,0,W,H);
+    drawNebula(ctx,W*0.3,H*0.4,400,'rgba(0,20,80,A)',0.1);
+    drawNebula(ctx,W*0.7,H*0.6,350,'rgba(20,0,60,A)',0.08);
+    drawStars(ctx,W,H,400,t);
+
+    // Orbiting particles
+    for(let i=0;i<12;i++){
+      const ang=i/12*Math.PI*2+t*0.3;
+      const r=280+30*Math.sin(t*0.5+i);
+      const px=W/2+Math.cos(ang)*r, py=H/2+Math.sin(ang)*r*0.4;
+      ctx.beginPath(); ctx.arc(px,py,1.5,0,Math.PI*2);
+      ctx.fillStyle=`rgba(0,228,255,${0.3+0.3*Math.sin(t+i)})`; ctx.fill();
+    }
+
+    // URL glow pulse
+    if(t>2){
+      const ux=W/2, uy=H*0.72;
+      for(let r=120;r>0;r-=15){
+        ctx.beginPath(); ctx.arc(ux,uy,r,0,Math.PI*2);
+        ctx.fillStyle=`rgba(0,228,255,${0.008*(1-r/120)*(0.7+0.3*Math.sin(t*2))})`; ctx.fill();
+      }
+    }
+
+    // Scanline
+    const scanY2=((t*80)%H);
+    ctx.fillStyle='rgba(0,228,255,0.012)'; ctx.fillRect(0,scanY2,W,2);
+
+    activeAnimators.s8=requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ── START ─────────────────────────────────────────────────────────
+window.onload = () => {
+  showScene(0);
+  tick();
+};
+</script>
+</body>
+</html>
