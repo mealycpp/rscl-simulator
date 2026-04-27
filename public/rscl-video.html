@@ -422,6 +422,9 @@ function skipToEnd() {
   showScene(currentScene);
 }
 
+// ── SCENE ID GUARD — each scene gets a unique id, loops check it ──
+let activeSceneId = 0;
+
 // ── CANVAS HELPERS ────────────────────────────────────────────────
 function setupCanvas(id) {
   const c = document.getElementById(id);
@@ -458,16 +461,20 @@ const animators = {};
 let activeAnimators = {};
 
 function initScene(idx) {
-  // Cancel previous
+  // Increment scene ID — all old loops will see their ID is stale and stop
+  activeSceneId++;
+  const myId = activeSceneId;
+
+  // Also cancel any lingering RAF
   Object.values(activeAnimators).forEach(id => cancelAnimationFrame(id));
   activeAnimators = {};
 
   const fns = [s1, s2, s3, s4, s5, s6, s7, s8];
-  if (fns[idx]) fns[idx]();
+  if (fns[idx]) fns[idx](myId);
 }
 
 // ── SCENE 1: Cold open — stars coalescing, title fades in ─────────
-function s1() {
+function s1(mySceneId) {
   const ctx = setupCanvas('c1');
   if(!ctx) return;
   const t0 = Date.now();
@@ -500,13 +507,13 @@ function s1() {
       ctx.fillStyle='rgba(0,228,255,0.04)'; ctx.fillRect(0,0,W,H);
     }
 
-    activeAnimators.s1 = requestAnimationFrame(draw);
+    if(activeSceneId===mySceneId) activeAnimators.s1 = requestAnimationFrame(draw);
   }
   draw();
 }
 
 // ── SCENE 2: The question ─────────────────────────────────────────
-function s2() {
+function s2(mySceneId) {
   const ctx = setupCanvas('c2');
   if(!ctx) return;
   const t0 = Date.now();
@@ -537,13 +544,13 @@ function s2() {
     if(t>1&&!t2){t2=true;document.getElementById('s2-planet').style.color='rgba(0,228,255,1)';}
     if(t>2.5&&!t3){t3=true;document.getElementById('s2-ans').style.color='rgba(0,232,122,0.9)';}
 
-    activeAnimators.s2 = requestAnimationFrame(draw);
+    if(activeSceneId===mySceneId) activeAnimators.s2 = requestAnimationFrame(draw);
   }
   draw();
 }
 
 // ── SCENE 3: Light travel — photon shooting across screen ─────────
-function s3() {
+function s3(mySceneId) {
   const ctx = setupCanvas('c3');
   if(!ctx) return;
   const t0=Date.now();
@@ -613,13 +620,13 @@ function s3() {
     if(t>2&&!t2){t2=true;document.getElementById('s3-unit').style.color='rgba(255,255,255,0.8)';}
     if(t>3.5&&!t3){t3=true;document.getElementById('s3-math').style.color='rgba(0,232,122,0.85)';}
 
-    if(currentScene===2) activeAnimators.s3=requestAnimationFrame(draw);
+    if(activeSceneId===mySceneId) activeAnimators.s3=requestAnimationFrame(draw);
   }
   draw();
 }
 
 // ── SCENE 4: Physics engines revealed ────────────────────────────
-function s4() {
+function s4(mySceneId) {
   const ctx = setupCanvas('c4');
   const ctx4b = document.getElementById('c4b').getContext('2d');
   if(!ctx||!ctx4b) return;
@@ -703,13 +710,13 @@ function s4() {
     eG2.addColorStop(0,'rgba(140,215,255,0.9)'); eG2.addColorStop(0.3,'#1a6fbb'); eG2.addColorStop(1,'rgba(0,6,40,0.9)');
     ctx4b.fillStyle=eG2; ctx4b.fill();
 
-    if(currentScene===3) activeAnimators.s4=requestAnimationFrame(draw);
+    if(activeSceneId===mySceneId) activeAnimators.s4=requestAnimationFrame(draw);
   }
   draw();
 }
 
 // ── SCENE 5: The unified canvas ──────────────────────────────────
-function s5() {
+function s5(mySceneId) {
   const ctx=setupCanvas('c5');
   if(!ctx) return;
   const t0=Date.now();
@@ -770,22 +777,49 @@ function s5() {
     [8,13,19].forEach(r=>{ctx.beginPath();ctx.arc(sigX,MY,r,0,Math.PI*2);ctx.strokeStyle=`rgba(0,232,255,${0.5-r*0.018})`;ctx.lineWidth=1.2;ctx.stroke();});
 
     // SR CLOCKS
-    [[W*0.38,(t*0.5)%(Math.PI*2),'rgba(79,195,247,0.9)','t_coord'],[W*0.38+70,(t*0.4999)%(Math.PI*2),'rgba(192,132,252,0.9)','τ proper']].forEach(([cx,secA,col,lbl])=>{
-      const cy=SPACE_H*0.22,cr=16;
-      ctx.beginPath();ctx.arc(cx,cy,cr,0,Math.PI*2);ctx.fillStyle='rgba(0,4,16,0.9)';ctx.fill();ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.stroke();
-      for(let i=0;i<12;i++){const a=i/12*Math.PI*2;ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*cr*0.75,cy+Math.sin(a)*cr*0.75);ctx.lineTo(cx+Math.cos(a)*cr*0.9,cy+Math.sin(a)*cr*0.9);ctx.strokeStyle=col.replace('0.9','0.3');ctx.lineWidth=0.7;ctx.stroke();}
-      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(secA-Math.PI/2)*cr*0.8,cy+Math.sin(secA-Math.PI/2)*cr*0.8);ctx.strokeStyle=col;ctx.lineWidth=1.2;ctx.stroke();
-      ctx.beginPath();ctx.arc(cx,cy,2,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
-      ctx.font='7px "IBM Plex Mono"';ctx.fillStyle=col;ctx.textAlign='center';ctx.fillText(lbl,cx,cy+cr+10);
-    });
-    // SR Dilation label centered above both clocks
-    ctx.font='bold 8px "IBM Plex Mono"';ctx.fillStyle='rgba(200,200,255,0.40)';ctx.textAlign='center';
-    ctx.fillText('── SR TIME DILATION ──',W*0.38+35,SPACE_H*0.22-38);
-    // "vs" between clocks
-    ctx.font='8px "IBM Plex Mono"';ctx.fillStyle='rgba(200,200,255,0.30)';
-    ctx.fillText('vs',W*0.38+35,SPACE_H*0.22+2);
-    ctx.font='7px "IBM Plex Mono"';ctx.fillStyle='rgba(200,200,255,0.25)';
-    ctx.fillText('γ=1+5×10⁻⁹',W*0.38+35,SPACE_H*0.22+13);
+    // SR CLOCKS — positioned right side, mid-height, clear of title and Earth
+    {
+      const CKY = SPACE_H*0.72;  // lower half of space zone — away from title
+      const CKL = W*0.60;        // left clock x — center-right area
+      const CKR2 = W*0.60+58;   // right clock x
+      const CR = 16;
+
+      // SR label above
+      ctx.font='bold 8px "IBM Plex Mono"';ctx.fillStyle='rgba(200,200,255,0.45)';ctx.textAlign='center';
+      ctx.fillText('── SR TIME DILATION ──', CKL+29, CKY-CR-12);
+
+      [[CKL,(t*0.5)%(Math.PI*2),'rgba(79,195,247,0.9)','t_coord'],
+       [CKR2,(t*0.4999)%(Math.PI*2),'rgba(192,132,252,0.9)','τ proper']
+      ].forEach(([cx,secA,col,lbl])=>{
+        ctx.beginPath();ctx.arc(cx,CKY,CR,0,Math.PI*2);
+        ctx.fillStyle='rgba(0,4,16,0.92)';ctx.fill();
+        ctx.strokeStyle=col;ctx.lineWidth=1.8;ctx.stroke();
+        for(let i=0;i<12;i++){
+          const a=i/12*Math.PI*2;
+          ctx.beginPath();
+          ctx.moveTo(cx+Math.cos(a)*CR*0.75,CKY+Math.sin(a)*CR*0.75);
+          ctx.lineTo(cx+Math.cos(a)*CR*0.9,CKY+Math.sin(a)*CR*0.9);
+          ctx.strokeStyle=i%3===0?col.replace('0.9','0.55'):'rgba(150,150,255,0.2)';
+          ctx.lineWidth=i%3===0?1.2:0.6;ctx.stroke();
+        }
+        // Minute hand
+        const mA=(t*0.5/60)%(Math.PI*2)-Math.PI/2;
+        ctx.beginPath();ctx.moveTo(cx,CKY);
+        ctx.lineTo(cx+Math.cos(mA)*CR*0.62,CKY+Math.sin(mA)*CR*0.62);
+        ctx.strokeStyle=col;ctx.lineWidth=2;ctx.lineCap='round';ctx.stroke();
+        // Second hand
+        ctx.beginPath();ctx.moveTo(cx,CKY);
+        ctx.lineTo(cx+Math.cos(secA-Math.PI/2)*CR*0.82,CKY+Math.sin(secA-Math.PI/2)*CR*0.82);
+        ctx.strokeStyle=col;ctx.lineWidth=1.2;ctx.lineCap='round';ctx.stroke();
+        ctx.beginPath();ctx.arc(cx,CKY,2.5,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
+        ctx.font='bold 8px "IBM Plex Mono"';ctx.fillStyle=col;ctx.textAlign='center';
+        ctx.fillText(lbl,cx,CKY+CR+12);
+      });
+      ctx.font='8px "IBM Plex Mono"';ctx.fillStyle='rgba(200,200,255,0.35)';ctx.textAlign='center';
+      ctx.fillText('vs',CKL+29,CKY+2);
+      ctx.font='7px "IBM Plex Mono"';ctx.fillStyle='rgba(200,200,255,0.28)';
+      ctx.fillText('γ=1+5×10⁻⁹',CKL+29,CKY+14);
+    }
 
     // EARTH
     for(let r=80;r>20;r-=10){ctx.beginPath();ctx.arc(EX,MY,r,0,Math.PI*2);ctx.fillStyle=`rgba(0,30,100,${0.04*(1-r/80)})`; ctx.fill();}
@@ -830,13 +864,13 @@ function s5() {
       ctx.font='bold 11px "IBM Plex Mono"';ctx.fillStyle=col;ctx.fillText(val,cx,FX_Y+32);
     });
 
-    if(currentScene===4) activeAnimators.s5=requestAnimationFrame(draw);
+    if(activeSceneId===mySceneId) activeAnimators.s5=requestAnimationFrame(draw);
   }
   draw();
 }
 
 // ── SCENE 6: 62 Planets ──────────────────────────────────────────
-function s6() {
+function s6(mySceneId) {
   const ctx=setupCanvas('c6');
   if(!ctx) return;
   const t0=Date.now();
@@ -871,13 +905,13 @@ function s6() {
     drawStars(ctx,W,H,300,t);
     drawNebula(ctx,W*0.6,H*0.5,400,'rgba(5,0,40,A)',0.12);
 
-    if(currentScene===5) activeAnimators.s6=requestAnimationFrame(draw);
+    if(activeSceneId===mySceneId) activeAnimators.s6=requestAnimationFrame(draw);
   }
   draw();
 }
 
 // ── SCENE 7: Biosignatures ────────────────────────────────────────
-function s7() {
+function s7(mySceneId) {
   const ctx=setupCanvas('c7');
   if(!ctx) return;
   const t0=Date.now();
@@ -915,13 +949,13 @@ function s7() {
     ctx.font='10px "IBM Plex Mono"';ctx.fillStyle='rgba(255,255,255,0.25)';ctx.textAlign='left';ctx.fillText('400nm',SBX,SBY+SBH+14);
     ctx.textAlign='right';ctx.fillText('700nm+',SBX+SBW,SBY+SBH+14);
 
-    if(currentScene===6) activeAnimators.s7=requestAnimationFrame(draw);
+    if(activeSceneId===mySceneId) activeAnimators.s7=requestAnimationFrame(draw);
   }
   draw();
 }
 
 // ── SCENE 8: Call to action ───────────────────────────────────────
-function s8() {
+function s8(mySceneId) {
   const ctx=setupCanvas('c8');
   if(!ctx) return;
   const t0=Date.now();
@@ -956,7 +990,7 @@ function s8() {
     const scanY2=((t*80)%H);
     ctx.fillStyle='rgba(0,228,255,0.012)'; ctx.fillRect(0,scanY2,W,2);
 
-    if(currentScene===7) activeAnimators.s8=requestAnimationFrame(draw);
+    if(activeSceneId===mySceneId) activeAnimators.s8=requestAnimationFrame(draw);
   }
   draw();
 }
