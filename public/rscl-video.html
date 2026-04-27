@@ -27,6 +27,122 @@ canvas{position:absolute;inset:0;}
 </head>
 <body>
 
+
+<!-- ══ START SCREEN ══════════════════════════════════════════════ -->
+<div id="start-screen" style="
+  position:fixed;inset:0;z-index:9999;
+  background:#000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;
+">
+  <!-- Animated starfield behind -->
+  <canvas id="cs" style="position:absolute;inset:0;"></canvas>
+
+  <div style="position:relative;z-index:10;text-align:center;">
+    <!-- RSCL Logo placeholder -->
+    <div style="
+      width:100px;height:100px;border-radius:50%;
+      border:2px solid rgba(0,228,255,0.8);
+      display:flex;align-items:center;justify-content:center;
+      margin:0 auto 32px;
+      box-shadow:0 0 40px rgba(0,228,255,0.3);
+      animation:logoSpin 8s linear infinite;
+    ">
+      <div style="text-align:center;">
+        <div style="font-family:'Orbitron',sans-serif;font-size:10px;color:#00e4ff;font-weight:700;letter-spacing:2px;">RSCL</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:7px;color:rgba(0,228,255,0.6);letter-spacing:1px;">@CPP</div>
+      </div>
+    </div>
+
+    <div style="font-family:'Orbitron',sans-serif;font-size:42px;font-weight:900;color:#fff;letter-spacing:4px;text-shadow:0 0 40px rgba(0,228,255,0.5);margin-bottom:8px;">
+      EARTH LOOKBACK
+    </div>
+    <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:400;color:#00e4ff;letter-spacing:12px;margin-bottom:48px;">
+      SIMULATOR
+    </div>
+
+    <!-- Pulsing click button -->
+    <div id="start-btn" style="
+      display:inline-flex;align-items:center;gap:14px;
+      padding:18px 48px;
+      border:2px solid rgba(0,228,255,0.7);
+      border-radius:50px;
+      background:rgba(0,228,255,0.08);
+      font-family:'IBM Plex Mono',monospace;
+      font-size:16px;font-weight:700;
+      color:#00e4ff;letter-spacing:3px;
+      box-shadow:0 0 30px rgba(0,228,255,0.2);
+      animation:pulsBtn 2s ease-in-out infinite;
+    ">
+      <span style="font-size:20px;">▶</span>
+      LAUNCH WITH AUDIO
+    </div>
+
+    <div style="margin-top:20px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(0,228,255,0.35);letter-spacing:2px;">
+      90 SECOND CINEMATIC INTRODUCTION · TURN UP YOUR VOLUME
+    </div>
+
+    <div style="margin-top:32px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px;">
+      Designed by Dr. Mohamed El-Hadedy · RSCL · Cal Poly Pomona
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes logoSpin {
+  from { box-shadow: 0 0 40px rgba(0,228,255,0.3), 0 0 0 0 rgba(0,228,255,0.1); }
+  50%  { box-shadow: 0 0 60px rgba(0,228,255,0.6), 0 0 80px rgba(0,228,255,0.1); }
+  to   { box-shadow: 0 0 40px rgba(0,228,255,0.3), 0 0 0 0 rgba(0,228,255,0.1); }
+}
+@keyframes pulsBtn {
+  0%,100% { transform:scale(1);   box-shadow:0 0 30px rgba(0,228,255,0.2); }
+  50%      { transform:scale(1.04);box-shadow:0 0 50px rgba(0,228,255,0.5); }
+}
+</style>
+
+<script>
+// Start screen starfield
+(()=>{
+  const c=document.getElementById('cs');
+  c.width=1280; c.height=720;
+  const ctx=c.getContext('2d');
+  const stars=Array.from({length:300},()=>({
+    x:Math.random()*1280, y:Math.random()*720,
+    r:Math.random()*1.2+0.2, a:Math.random()*0.6+0.1,
+    sp:Math.random()*0.02+0.005, ph:Math.random()*Math.PI*2
+  }));
+  let t=0;
+  function draw(){
+    ctx.fillStyle='rgba(0,0,8,0.2)'; ctx.fillRect(0,0,1280,720);
+    stars.forEach(s=>{
+      const a=s.a*(0.5+0.5*Math.sin(t*s.sp+s.ph));
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(180,220,255,${a})`; ctx.fill();
+    });
+    t+=0.016;
+    if(document.getElementById('start-screen').style.display!=='none')
+      requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// Click handler — dismisses start screen AND starts audio + video
+document.getElementById('start-screen').addEventListener('click', () => {
+  // Fade out start screen
+  const ss = document.getElementById('start-screen');
+  ss.style.transition = 'opacity 0.8s';
+  ss.style.opacity = '0';
+  setTimeout(() => { ss.style.display = 'none'; }, 800);
+
+  // Start audio
+  initAudio();
+
+  // Start video tick
+  totalStart = Date.now();
+  sceneStart = Date.now();
+});
+</script>
+
 <div id="progress-bar" style="width:0%"></div>
 <div id="scene-label">SCENE 1 / 8</div>
 <div id="skip" onclick="skipToEnd()">SKIP ▶▶</div>
@@ -778,7 +894,8 @@ function s8() {
 // ── START ─────────────────────────────────────────────────────────
 window.onload = () => {
   showScene(0);
-  tick();
+  // tick() called by start screen click, not on load
+  // Pre-render scene 1 so it's ready
 };
 </script>
 
@@ -1010,16 +1127,9 @@ function playScore() {
   }, 88000);
 }
 
-// Start audio on first user interaction (browser requirement)
-document.addEventListener('click', initAudio, { once: true });
-document.addEventListener('keydown', initAudio, { once: true });
+// Audio triggered by start screen click only
 
-// Also try to autostart (works in some browsers)
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    try { initAudio(); } catch(e) {}
-  }, 500);
-});
+// Audio starts only on start screen click — browser security requirement
 </script>
 
 </body>
